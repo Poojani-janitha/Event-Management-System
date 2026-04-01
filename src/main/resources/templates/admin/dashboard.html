@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Event Management System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h1>
+        <p>Manage venue bookings, events and users</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+            <div class="stat-info">
+                <h3 th:text="${totalEvents}">0</h3>
+                <p>Total Events</p>
+            </div>
+        </div>
+        <div class="stat-card warning">
+            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+            <div class="stat-info">
+                <h3 th:text="${pendingEvents}">0</h3>
+                <p>Pending Approval</p>
+            </div>
+        </div>
+        <div class="stat-card danger">
+            <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="stat-info">
+                <h3 th:text="${conflictEvents}">0</h3>
+                <p>Booking Conflicts</p>
+            </div>
+        </div>
+        <div class="stat-card info">
+            <div class="stat-icon"><i class="fas fa-building"></i></div>
+            <div class="stat-info">
+                <h3 th:text="${totalVenues}">0</h3>
+                <p>Venues</p>
+            </div>
+        </div>
+        <div class="stat-card success">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-info">
+                <h3 th:text="${totalUsers}">0</h3>
+                <p>Registered Users</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-nav-cards">
+        <a th:href="@{/admin/events}" class="admin-nav-card">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Manage Events</span>
+        </a>
+        <a th:href="@{/admin/venues}" class="admin-nav-card">
+            <i class="fas fa-building"></i>
+            <span>Manage Venues</span>
+        </a>
+        <a th:href="@{/admin/users}" class="admin-nav-card">
+            <i class="fas fa-users"></i>
+            <span>Manage Users</span>
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-list"></i> Recent Bookings</h2>
+        </div>
+        <div class="card-body">
+            <table class="table" th:if="${not #lists.isEmpty(recentEvents)}">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Organizer</th>
+                        <th>Venue</th>
+                        <th>Date &amp; Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="event : ${recentEvents}">
+                        <td th:text="${event.title}"></td>
+                        <td>
+                            <span th:text="${event.organizer.name}"></span><br>
+                            <small th:text="${event.organizer.society}" class="text-muted"></small>
+                        </td>
+                        <td th:text="${event.venue.name}"></td>
+                        <td>
+                            <span th:text="${#temporals.format(event.startDateTime, 'dd MMM yyyy HH:mm')}"></span>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${event.status.name() == 'APPROVED'} ? 'badge-success' : (${event.status.name() == 'PENDING'} ? 'badge-warning' : (${event.status.name() == 'CONFLICT'} ? 'badge-danger' : 'badge-secondary'))"
+                                  th:text="${event.status}"></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p th:if="${#lists.isEmpty(recentEvents)}" class="text-center text-muted">No events yet.</p>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html>

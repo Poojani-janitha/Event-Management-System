@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Events - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1><i class="fas fa-calendar-alt"></i> Manage Events</h1>
+        <a th:href="@{/admin/dashboard}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success"><i class="fas fa-check-circle"></i> <span th:text="${success}"></span></div>
+    <div th:if="${error}" class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span></div>
+
+    <div class="card" th:if="${not #lists.isEmpty(conflictEvents)}">
+        <div class="card-header danger-header">
+            <h2><i class="fas fa-exclamation-triangle"></i> Booking Conflicts
+                <span class="badge badge-danger" th:text="${conflictEvents.size()}"></span>
+            </h2>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Society</th>
+                        <th>Venue</th>
+                        <th>Date/Time</th>
+                        <th>Conflict Details</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="event : ${conflictEvents}" class="conflict-row">
+                        <td th:text="${event.title}"></td>
+                        <td th:text="${event.organizer.society}"></td>
+                        <td th:text="${event.venue.name}"></td>
+                        <td>
+                            <span th:text="${#temporals.format(event.startDateTime, 'dd MMM yyyy HH:mm')}"></span>
+                            <br><small>to <span th:text="${#temporals.format(event.endDateTime, 'HH:mm')}"></span></small>
+                        </td>
+                        <td><small class="text-danger" th:text="${event.conflictNote}"></small></td>
+                        <td>
+                            <form th:action="@{/admin/events/{id}/approve(id=${event.id})}" method="post" style="display:inline">
+                                <button type="submit" class="btn btn-success btn-sm" title="Override and approve">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                            </form>
+                            <form th:action="@{/admin/events/{id}/reject(id=${event.id})}" method="post" style="display:inline">
+                                <input type="hidden" name="reason" value="Booking conflict - venue not available at this time">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-clock"></i> Pending Events
+                <span class="badge badge-warning" th:text="${pendingEvents.size()}"></span>
+            </h2>
+        </div>
+        <div class="card-body">
+            <table class="table" th:if="${not #lists.isEmpty(pendingEvents)}">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Society / Organizer</th>
+                        <th>Venue</th>
+                        <th>Date/Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="event : ${pendingEvents}">
+                        <td>
+                            <strong th:text="${event.title}"></strong>
+                            <br><small th:text="${event.description}" class="text-muted"></small>
+                        </td>
+                        <td>
+                            <span th:text="${event.organizer.society}"></span>
+                            <br><small th:text="${event.organizer.name}" class="text-muted"></small>
+                        </td>
+                        <td th:text="${event.venue.name}"></td>
+                        <td>
+                            <span th:text="${#temporals.format(event.startDateTime, 'dd MMM yyyy HH:mm')}"></span>
+                            <br><small>to <span th:text="${#temporals.format(event.endDateTime, 'HH:mm')}"></span></small>
+                        </td>
+                        <td>
+                            <form th:action="@{/admin/events/{id}/approve(id=${event.id})}" method="post" style="display:inline">
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                            </form>
+                            <form th:action="@{/admin/events/{id}/reject(id=${event.id})}" method="post" style="display:inline">
+                                <input type="hidden" name="reason" th:value="'Rejected by admin'">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p th:if="${#lists.isEmpty(pendingEvents)}" class="text-center text-muted">No pending events.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-list"></i> All Events</h2>
+        </div>
+        <div class="card-body">
+            <table class="table" th:if="${not #lists.isEmpty(events)}">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Society</th>
+                        <th>Venue</th>
+                        <th>Date/Time</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="event : ${events}">
+                        <td th:text="${event.title}"></td>
+                        <td th:text="${event.organizer.society}"></td>
+                        <td th:text="${event.venue.name}"></td>
+                        <td th:text="${#temporals.format(event.startDateTime, 'dd MMM yyyy HH:mm')}"></td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${event.status.name() == 'APPROVED'} ? 'badge-success' : (${event.status.name() == 'PENDING'} ? 'badge-warning' : (${event.status.name() == 'CONFLICT'} ? 'badge-danger' : 'badge-secondary'))"
+                                  th:text="${event.status}"></span>
+                        </td>
+                        <td>
+                            <form th:action="@{/admin/events/{id}/delete(id=${event.id})}" method="post" style="display:inline"
+                                  onsubmit="return confirm('Delete this event?')">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p th:if="${#lists.isEmpty(events)}" class="text-center text-muted">No events yet.</p>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html>

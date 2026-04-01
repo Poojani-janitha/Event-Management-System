@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venues - Event Management System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1><i class="fas fa-building"></i> Available Venues</h1>
+        <a th:href="@{/events/new}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Book a Venue
+        </a>
+    </div>
+
+    <div class="venues-grid">
+        <div th:each="venue : ${venues}" class="venue-card"
+             th:classappend="${!venue.available} ? 'venue-card-disabled' : ''">
+            <div class="venue-card-icon">
+                <i th:class="${venue.type.name() == 'AUDITORIUM'} ? 'fas fa-theater-masks fa-3x' :
+                              (${venue.type.name() == 'SEMINAR_HALL'} ? 'fas fa-chalkboard-teacher fa-3x' :
+                               'fas fa-laptop-code fa-3x')"></i>
+            </div>
+            <div class="venue-card-body">
+                <h3 th:text="${venue.name}"></h3>
+                <div class="venue-meta">
+                    <span class="venue-type-badge" th:text="${venue.type}"></span>
+                    <span><i class="fas fa-users"></i> <span th:text="${venue.capacity}"></span> seats</span>
+                </div>
+                <p th:text="${venue.description}" class="venue-description"></p>
+                <div class="venue-status">
+                    <span class="badge" th:classappend="${venue.available} ? 'badge-success' : 'badge-secondary'"
+                          th:text="${venue.available} ? 'Available for Booking' : 'Currently Unavailable'"></span>
+                </div>
+            </div>
+            <div class="venue-card-footer" th:if="${venue.available}">
+                <a th:href="@{/events/new}" class="btn btn-primary btn-full">
+                    <i class="fas fa-calendar-plus"></i> Book This Venue
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html>

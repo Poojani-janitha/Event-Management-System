@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details - Event Management System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1><i class="fas fa-calendar-alt"></i> Event Details</h1>
+        <a th:href="@{/events/my}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 th:text="${event.title}"></h2>
+            <span class="badge badge-lg"
+                  th:classappend="${event.status.name() == 'APPROVED'} ? 'badge-success' : (${event.status.name() == 'PENDING'} ? 'badge-warning' : (${event.status.name() == 'CONFLICT'} ? 'badge-danger' : 'badge-secondary'))"
+                  th:text="${event.status}"></span>
+        </div>
+        <div class="card-body">
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label><i class="fas fa-building"></i> Venue</label>
+                    <p th:text="${event.venue.name}"></p>
+                </div>
+                <div class="detail-item">
+                    <label><i class="fas fa-layer-group"></i> Venue Type</label>
+                    <p th:text="${event.venue.type}"></p>
+                </div>
+                <div class="detail-item">
+                    <label><i class="fas fa-users"></i> Capacity</label>
+                    <p th:text="${event.venue.capacity}"></p>
+                </div>
+                <div class="detail-item">
+                    <label><i class="fas fa-user"></i> Organizer</label>
+                    <p th:text="${event.organizer.name}"></p>
+                </div>
+                <div class="detail-item">
+                    <label><i class="fas fa-university"></i> Society</label>
+                    <p th:text="${event.organizer.society}"></p>
+                </div>
+                <div class="detail-item">
+                    <label><i class="fas fa-calendar"></i> Start Date &amp; Time</label>
+                    <p th:text="${#temporals.format(event.startDateTime, 'dd MMMM yyyy, HH:mm')}"></p>
+                </div>
+                <div class="detail-item">
+                    <label><i class="fas fa-calendar-check"></i> End Date &amp; Time</label>
+                    <p th:text="${#temporals.format(event.endDateTime, 'dd MMMM yyyy, HH:mm')}"></p>
+                </div>
+            </div>
+
+            <div class="detail-item full-width" th:if="${event.description != null and !event.description.isEmpty()}">
+                <label><i class="fas fa-align-left"></i> Description</label>
+                <p th:text="${event.description}"></p>
+            </div>
+
+            <div th:if="${event.status.name() == 'CONFLICT'}" class="alert alert-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Booking Conflict Detected!</strong>
+                <p th:text="${event.conflictNote}"></p>
+                <p>Please contact the admin to resolve this conflict.</p>
+            </div>
+
+            <div th:if="${event.status.name() == 'REJECTED'}" class="alert alert-error">
+                <i class="fas fa-times-circle"></i>
+                <strong>Booking Rejected</strong>
+                <p th:if="${event.conflictNote != null}" th:text="'Reason: ' + ${event.conflictNote}"></p>
+            </div>
+
+            <div th:if="${event.status.name() == 'APPROVED'}" class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <strong>Booking Approved!</strong>
+                <p>Your venue booking has been confirmed.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html>

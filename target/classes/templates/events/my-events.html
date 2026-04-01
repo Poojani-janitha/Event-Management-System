@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Events - Event Management System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1><i class="fas fa-calendar-check"></i> My Event Bookings</h1>
+            <p th:text="'Society: ' + ${user.society}" class="text-muted"></p>
+        </div>
+        <a th:href="@{/events/new}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Book a Venue
+        </a>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success"><i class="fas fa-check-circle"></i> <span th:text="${success}"></span></div>
+    <div th:if="${warning}" class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> <span th:text="${warning}"></span></div>
+    <div th:if="${error}" class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span></div>
+
+    <div class="card">
+        <div class="card-body">
+            <div th:if="${not #lists.isEmpty(events)}">
+                <div th:each="event : ${events}" class="event-card"
+                     th:classappend="${event.status.name() == 'CONFLICT'} ? 'event-card-conflict' : (${event.status.name() == 'APPROVED'} ? 'event-card-approved' : (${event.status.name() == 'REJECTED'} ? 'event-card-rejected' : ''))">
+                    <div class="event-card-header">
+                        <h3 th:text="${event.title}"></h3>
+                        <span class="badge"
+                              th:classappend="${event.status.name() == 'APPROVED'} ? 'badge-success' : (${event.status.name() == 'PENDING'} ? 'badge-warning' : (${event.status.name() == 'CONFLICT'} ? 'badge-danger' : 'badge-secondary'))"
+                              th:text="${event.status}"></span>
+                    </div>
+                    <div class="event-card-body">
+                        <p class="event-meta">
+                            <i class="fas fa-building"></i> <span th:text="${event.venue.name}"></span>
+                            &nbsp;|&nbsp;
+                            <i class="fas fa-calendar"></i>
+                            <span th:text="${#temporals.format(event.startDateTime, 'dd MMM yyyy')}"></span>
+                            &nbsp;|&nbsp;
+                            <i class="fas fa-clock"></i>
+                            <span th:text="${#temporals.format(event.startDateTime, 'HH:mm')}"></span> -
+                            <span th:text="${#temporals.format(event.endDateTime, 'HH:mm')}"></span>
+                        </p>
+                        <p th:text="${event.description}" class="event-description"></p>
+                        <div th:if="${event.status.name() == 'CONFLICT'}" class="conflict-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Conflict Detected:</strong>
+                            <span th:text="${event.conflictNote}"></span>
+                        </div>
+                        <div th:if="${event.status.name() == 'REJECTED' and event.conflictNote != null}" class="rejection-note">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Rejection Reason:</strong>
+                            <span th:text="${event.conflictNote}"></span>
+                        </div>
+                    </div>
+                    <div class="event-card-footer">
+                        <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                        <form th:if="${event.status.name() == 'PENDING'}"
+                              th:action="@{/events/{id}/delete(id=${event.id})}" method="post" style="display:inline"
+                              onsubmit="return confirm('Cancel this booking request?')">
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(events)}" class="empty-state">
+                <i class="fas fa-calendar-times fa-4x"></i>
+                <h3>No Bookings Yet</h3>
+                <p>You haven't made any venue booking requests yet.</p>
+                <a th:href="@{/events/new}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Book a Venue
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html>

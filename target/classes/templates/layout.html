@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} + ' - Event Management System'">Event Management System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<nav th:fragment="navbar" class="navbar">
+    <div class="nav-brand">
+        <i class="fas fa-calendar-alt"></i>
+        <span>EventMS</span>
+    </div>
+    <div class="nav-links">
+        <span sec:authorize="isAuthenticated()">
+            <a th:href="@{/events/my}" class="nav-link"><i class="fas fa-list"></i> My Events</a>
+            <a th:href="@{/events/new}" class="nav-link"><i class="fas fa-plus"></i> Book Venue</a>
+            <a th:href="@{/events/venues}" class="nav-link"><i class="fas fa-building"></i> Venues</a>
+            <span sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin/dashboard}" class="nav-link admin-link"><i class="fas fa-cog"></i> Admin</a>
+            </span>
+            <form th:action="@{/auth/logout}" method="post" style="display:inline">
+                <button type="submit" class="nav-link btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </form>
+        </span>
+        <span sec:authorize="!isAuthenticated()">
+            <a th:href="@{/auth/login}" class="nav-link">Login</a>
+            <a th:href="@{/auth/register}" class="nav-link">Register</a>
+        </span>
+    </div>
+</nav>
+<footer th:fragment="footer">
+    <div class="footer-content">
+        <p>&copy; 2024 Faculty Event Management System. All rights reserved.</p>
+    </div>
+</footer>
+</body>
+</html>
