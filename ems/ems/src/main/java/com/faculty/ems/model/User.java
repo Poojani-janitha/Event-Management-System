@@ -2,6 +2,7 @@ package com.faculty.ems.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -9,40 +10,43 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+@Data
 @Entity
 @Table(name = "users")
-@Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Unique user identifier [cite: 81, 211]
+    private Integer id;
 
     @Column(unique = true, nullable = false, length = 50)
-    private String username; // Login username [cite: 81, 214]
+    private String username;
 
     @Column(unique = true, nullable = false, length = 100)
-    private String email; // User email address [cite: 81, 216]
+    private String email;
 
     @Column(nullable = false)
-    private String password; // BCrypt hashed password [cite: 81, 218]
+    private String password;
 
-    @Column(name = "full_name", nullable = false, length = 100)
-    private String fullName; // Display name [cite: 81, 221]
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role = Role.MEMBER; // ADMIN, SOCIETY_ADMIN, or MEMBER
+    @Builder.Default
+    private Role role = Role.MEMBER;
 
-    private boolean enabled = true; // Account active flag [cite: 81, 225]
+    @Builder.Default
+    private boolean enabled = true;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt; // Registration timestamp [cite: 81, 228]
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt; // Last update timestamp [cite: 81]
+    private LocalDateTime updatedAt;
 }
