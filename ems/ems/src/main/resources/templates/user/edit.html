@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: mainLayout(~{::section})}">
+<head>
+    <title>Edit User</title>
+</head>
+<body>
+<section>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">Edit User</h4>
+        <a th:href="@{/users}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Users
+        </a>
+    </div>
+
+    <div class="card shadow-sm" style="max-width: 600px;">
+        <div class="card-body">
+            <form th:action="@{/users/{id}/edit(id=${user.id})}" th:object="${user}" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" th:field="*{username}" class="form-control">
+                    <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" th:field="*{email}" class="form-control">
+                    <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" th:field="*{fullName}" class="form-control">
+                    <span th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Role</label>
+                    <select th:field="*{role}" class="form-select">
+                        <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"></option>
+                    </select>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" th:field="*{enabled}" class="form-check-input" id="enabled">
+                    <label class="form-check-label" for="enabled">Enabled</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Update</button>
+                <a th:href="@{/users}" class="btn btn-outline-secondary ms-2">Cancel</a>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

@@ -19,13 +19,13 @@ import java.time.LocalDateTime;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(unique = true,nullable = false,length = 50)
+    @Column(unique = true, nullable = false, length = 50)
     private String username;
 
-    @Column(unique = true,nullable = false,length = 100)
+    @Column(unique = true, nullable = false, length = 100)
     private String email;
 
     @Column(nullable = false)
@@ -34,7 +34,7 @@ public class User {
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @EnumeratedValue
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
     private Role role = Role.MEMBER;
@@ -47,9 +47,6 @@ public class User {
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at", updatable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-
-
 }

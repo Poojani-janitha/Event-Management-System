@@ -14,16 +14,24 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // This makes every page public
+                        .requestMatchers("/login", "/register", "/css/**").permitAll()
+                        .requestMatchers("/users/**").hasAnyRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
-                .csrf(csrf -> csrf.disable()); // Disables CSRF for easier testing
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/dashboard", true)
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/login?logout")
+                );
+
         return http.build();
     }
 
-
-    //singleton object is return
     @Bean
-    public PasswordEncoder passwordEncoder(){
-        return  new BCryptPasswordEncoder();
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
