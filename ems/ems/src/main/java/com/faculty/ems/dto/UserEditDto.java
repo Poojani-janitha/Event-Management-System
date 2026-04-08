@@ -27,7 +27,7 @@ public class UserEditDto {
     private String fullName;
 
 
-    @Size(min = 8, message = "Password must be at least 8 characters")
+    //@Size(min = 8, message = "Password must be at least 8 characters")
     private String password;
 
     @NotNull(message = "Role is required")
