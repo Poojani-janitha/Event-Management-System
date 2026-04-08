@@ -54,6 +54,9 @@ public class UserService {
         user.setFullName(dto.getFullName());
         user.setRole(dto.getRole());
         user.setEnabled(dto.isEnabled());
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
         userRepository.save(user);
     }
 

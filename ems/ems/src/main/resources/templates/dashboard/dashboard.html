@@ -7,21 +7,144 @@
 </head>
 <body>
 <section>
-    <h2>Welcome, <span th:text="${username}"></span></h2>
+    <h4 class="mb-4">Welcome, <span th:text="${username}"></span></h4>
 
+    <!-- ADMIN: pending venue booking requests -->
     <div sec:authorize="hasRole('ADMIN')">
-        <h3>Admin Panel</h3>
-        <p>Manage users, events, and system settings.</p>
+        <h5 class="mb-3">Pending Venue Booking Requests</h5>
+
+        <div th:if="${#lists.isEmpty(pendingBookings)}" class="alert alert-info">
+            No pending booking requests.
+        </div>
+
+        <div th:if="${not #lists.isEmpty(pendingBookings)}" class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Event Title</th>
+                            <th>Society</th>
+                            <th>Event Type</th>
+                            <th>Event Status</th>
+                            <th>Booking Date</th>
+                            <th>Time</th>
+                            <th>Booking Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="booking : ${pendingBookings}">
+                            <td th:text="${booking.id}"></td>
+                            <td th:text="${booking.event.title}"></td>
+                            <td th:text="${booking.society.name}"></td>
+                            <td th:text="${booking.event.eventType}"></td>
+                            <td>
+                                <span th:text="${booking.event.status}"
+                                      th:classappend="${booking.event.status.name() == 'PUBLISHED'} ? 'badge bg-success' :
+                                                      (${booking.event.status.name() == 'DRAFT'} ? 'badge bg-secondary' : 'badge bg-warning text-dark')">
+                                </span>
+                            </td>
+                            <td th:text="${booking.bookingDate}"></td>
+                            <td th:text="${booking.startTime} + ' – ' + ${booking.endTime}"></td>
+                            <td><span class="badge bg-warning text-dark">PENDING</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
+    <!-- SOCIETY ADMIN: all their venue bookings -->
     <div sec:authorize="hasRole('SOCIETY_ADMIN')">
-        <h3>Society Admin Panel</h3>
-        <p>Manage your society's events and bookings.</p>
+        <h5 class="mb-3">My Venue Bookings</h5>
+
+        <div th:if="${#lists.isEmpty(myBookings)}" class="alert alert-info">
+            You have no venue bookings yet.
+        </div>
+
+        <div th:if="${not #lists.isEmpty(myBookings)}" class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Event Title</th>
+                            <th>Society</th>
+                            <th>Event Type</th>
+                            <th>Booking Date</th>
+                            <th>Time</th>
+                            <th>Booking Status</th>
+                            <th>Admin Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="booking : ${myBookings}">
+                            <td th:text="${booking.id}"></td>
+                            <td th:text="${booking.event.title}"></td>
+<!--                            "event" is defined in venue booking model as many to one condition-->
+                            <td th:text="${booking.society.name}"></td>
+                            <td th:text="${booking.event.eventType}"></td>
+                            <td th:text="${booking.bookingDate}"></td>
+                            <td th:text="${booking.startTime} + ' – ' + ${booking.endTime}"></td>
+                            <td>
+                                <span th:text="${booking.status}"
+                                      th:classappend="${booking.status.name() == 'APPROVED'} ? 'badge bg-success' :
+                                                      (${booking.status.name() == 'PENDING'} ? 'badge bg-warning text-dark' :
+                                                      (${booking.status.name() == 'REJECTED'} ? 'badge bg-danger' : 'badge bg-secondary'))">
+                                </span>
+                            </td>
+                            <td th:text="${booking.adminNote != null ? booking.adminNote : '—'}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
+    <!-- MEMBER -->
     <div sec:authorize="hasRole('MEMBER')">
-        <h3>Member Dashboard</h3>
-        <p>Browse and register for upcoming events.</p>
+        <h5>Member Dashboard</h5>
+        <p class="text-muted">Upcoming Events.</p>
+
+        <div th:if="${#lists.isEmpty(approvedBookings)}" class="alert alert-info">
+            No Upcoming Events.
+        </div>
+
+        <div th:if="${not #lists.isEmpty(approvedBookings)}" class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Booking ID</th>
+                        <th>Event Title</th>
+                        <th>Society</th>
+                        <th>Event Type</th>
+                        <th>Event Status</th>
+                        <th>Booking Date</th>
+                        <th>Time</th>
+                        <th>Booking Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="booking : ${approvedBookings}">
+                        <td th:text="${booking.id}"></td>
+                        <td th:text="${booking.event.title}"></td>
+                        <td th:text="${booking.society.name}"></td>
+                        <td th:text="${booking.event.eventType}"></td>
+                        <td>
+                                <span th:text="${booking.event.status}"
+                                      th:classappend="${booking.event.status.name() == 'PUBLISHED'} ? 'badge bg-success' :
+                                                      (${booking.event.status.name() == 'DRAFT'} ? 'badge bg-secondary' : 'badge bg-warning text-dark')">
+                                </span>
+                        </td>
+                        <td th:text="${booking.bookingDate}"></td>
+                        <td th:text="${booking.startTime} + ' – ' + ${booking.endTime}"></td>
+                        <td><span class="badge bg-success text-dark">Approved</span></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </section>
 </body>
