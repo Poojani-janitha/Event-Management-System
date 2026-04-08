@@ -24,11 +24,11 @@ public class SocietyService {
     }
 
     public void addMemberToSociety(Society society, User user) {
-        if(!memberRepo.existsBySocietyIdAndUserId(society.getId(),user.getId())) {
-            SocietyMember member = new SocietyMember();
-            member.setSociety(society);
-            member.setUser(user);
-            memberRepo.save(member);
-        }
+//        if(!memberRepo.existsBySocietyIdAndUserId(society.getId(),user.getId())) {
+//            SocietyMember member = new SocietyMember();
+//            member.setSociety(society);
+//            member.setUser(user);
+//            memberRepo.save(member);
+//        }
     }
 }
