@@ -6,6 +6,7 @@ import com.faculty.ems.model.User;
 import com.faculty.ems.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,6 +17,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/users")
 public class UserManagementController {
 
+    @Autowired
+    private PasswordEncoder encoder;
     @Autowired
     private UserService userService;
 
@@ -30,7 +33,7 @@ public class UserManagementController {
         User user = userService.findUserById(id);
         UserEditDto dto = new UserEditDto(
                 user.getId(), user.getUsername(), user.getEmail(),
-                user.getFullName(), user.getRole(), user.isEnabled()
+                user.getFullName(), null, user.getRole(), user.isEnabled()
         );
         model.addAttribute("user", dto);
         model.addAttribute("roles", Role.values());
