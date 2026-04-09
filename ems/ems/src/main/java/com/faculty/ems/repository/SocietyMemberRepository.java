@@ -7,10 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface SocietyMemberRepository extends JpaRepository<SocietyMember, Long> {
+public interface SocietyMemberRepository extends JpaRepository<SocietyMember, Integer> {
     // Find all members of a specific society
-//    List<SocietyMember> findBySocietyId(Long societyId);
+    List<SocietyMember> findBySocietyId(Integer societyId);
 
     // Check if a user is already a member (to prevent duplicates)
-    boolean existsBySocietyIdAndUserId(Long societyId, Long userId);
+    boolean existsBySocietyIdAndUserId(Integer societyId, Integer userId);
 }

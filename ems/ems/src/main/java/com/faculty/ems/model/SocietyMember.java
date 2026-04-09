@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class SocietyMember {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne
     @JoinColumn(name = "society_id", nullable = false)

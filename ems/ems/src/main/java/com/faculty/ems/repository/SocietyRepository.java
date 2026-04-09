@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface SocietyRepository extends JpaRepository<Society, Long> {
+public interface SocietyRepository extends JpaRepository<Society, Integer> {
     // Find all active societies for the list view
-//    List<Society> findByActiveTrue();
+    List<Society> findByActiveTrue();
 }

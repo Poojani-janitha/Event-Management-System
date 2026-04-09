@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: mainLayout(~{::section})}">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Society</title>
+</head>
+<body>
+    <section>
+        <div class="card shadow-sm border-0 p-4">
+            <h2 class="fw-bold mb-4">
+                Register New Society
+            </h2>
+            <form th:action="@{/societies/save}" th:object="${society}" method="post">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Society Name</label>
+                        <input type="text" th:field="*{name}" class="form-control rounded-pill" placeholder="Enter Society Name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Contact Email</label>
+                        <input type="email" th:field="*{contactEmail}" class="form-control rounded-pill" placeholder="Enter Contact Email" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Description</label>
+                        <textarea th:field="*{description}" class="form-control" rows="3" placeholder="Enter Description"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Assign Society Admin</label>
+                        <select th:field="*{societyAdmin}" class="form-select rounded-pill">
+                            <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.fullName}"></option>
+                        </select>
+                    </div>
+                    <div class="col-12 mt-4">
+                        <button type="submit" class="btn btn-primary rounded-pill px-5">Save Society</button>
+                        <a th:href="@{/societies}" class="btn btn-light rounded-pill px-4">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+</body>
+</html>
