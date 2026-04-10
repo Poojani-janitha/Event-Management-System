@@ -13,4 +13,7 @@ public interface SocietyMemberRepository extends JpaRepository<SocietyMember, In
 
     // Check if a user is already a member (to prevent duplicates)
     boolean existsBySocietyIdAndUserId(Integer societyId, Integer userId);
+
+    // Find a specific member by society and user ID
+    SocietyMember findBySocietyIdAndUserId(Integer societyId, Integer userId);
 }

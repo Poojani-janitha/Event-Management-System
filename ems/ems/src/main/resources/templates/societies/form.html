@@ -6,37 +6,41 @@
     <title>Create Society</title>
 </head>
 <body>
-    <section>
-        <div class="card shadow-sm border-0 p-4">
-            <h2 class="fw-bold mb-4">
-                Register New Society
-            </h2>
-            <form th:action="@{/societies/save}" th:object="${society}" method="post">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Society Name</label>
-                        <input type="text" th:field="*{name}" class="form-control rounded-pill" placeholder="Enter Society Name" required>
+    <section class="py-4">
+        <div class="card shadow border-0" style="max-width: 600px; margin: 0 auto;">
+            <div class="card-body p-4">
+                <h3 class="fw-bold mb-4" th:text="${society.id == null ? 'Create New Society' : 'Edit Society'}"></h3>
+
+                <form th:action="${society.id == null ? '/societies/save' : '/societies/' + society.id + '/update'}" th:object="${society}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Society Name</label>
+                        <input type="text" th:field="*{name}" class="form-control" placeholder="e.g., IEEE Student Branch" required>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Contact Email</label>
-                        <input type="email" th:field="*{contactEmail}" class="form-control rounded-pill" placeholder="Enter Contact Email" required>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Contact Email</label>
+                        <input type="email" th:field="*{contactEmail}" class="form-control" placeholder="e.g., society@faculty.lk" required>
                     </div>
-                    <div class="col-12">
-                        <label class="form-label">Description</label>
-                        <textarea th:field="*{description}" class="form-control" rows="3" placeholder="Enter Description"></textarea>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description</label>
+                        <textarea th:field="*{description}" class="form-control" rows="4" placeholder="Describe the society..."></textarea>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Assign Society Admin</label>
-                        <select th:field="*{societyAdmin}" class="form-select rounded-pill">
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Assign Administrator</label>
+                        <select th:field="*{societyAdmin}" class="form-select">
+                            <option value="">-- Select Admin --</option>
                             <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.fullName}"></option>
                         </select>
                     </div>
-                    <div class="col-12 mt-4">
-                        <button type="submit" class="btn btn-primary rounded-pill px-5">Save Society</button>
-                        <a th:href="@{/societies}" class="btn btn-light rounded-pill px-4">Cancel</a>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary" th:text="${society.id == null ? 'Create Society' : 'Update Society'}"></button>
+                        <a th:href="@{/societies}" class="btn btn-outline-secondary">Cancel</a>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </section>
 </body>
