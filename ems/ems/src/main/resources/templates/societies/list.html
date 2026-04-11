@@ -29,12 +29,14 @@
                 <!-- Card Body -->
                 <div class="card-body d-flex flex-column text-center p-4">
                     <h5 class="fw-bold card-title mb-2" th:text="${s.name}">Society Name</h5>
-                    <p class="text-muted small lh-lg mb-3" th:text="${s.description}">Society Description</p>
+                    <p class="text-muted small lh-lg mb-3 flex-grow-1" th:text="${s.description}">Society Description</p>
                     
-                    <span th:class="${s.active ? 'badge bg-success mx-auto mb-2 px-3 py-1' : 'badge bg-danger mx-auto mb-2 px-3 py-1'}"
-                          th:text="${s.active ? '✓ Active' : '✗ Inactive'}">Status</span>
-                    
-                    <div class="badge bg-success text-white mx-auto px-4 py-2" th:text="'Admin: ' + ${s.societyAdmin.fullName}"></div>
+                    <div class="mt-auto">
+                        <span th:class="${s.active ? 'badge bg-success mx-auto mb-2 px-3 py-1' : 'badge bg-danger mx-auto mb-2 px-3 py-1'}"
+                              th:text="${s.active ? '✓ Active' : '✗ Inactive'}">Status</span>
+                        
+                        <div class="badge text-black mx-auto px-4 py-2 fw-bold fs-6 d-block" th:text="'Admin: ' + ${s.societyAdmin.fullName}"></div>
+                    </div>
                 </div>
                 
                 <!-- Divider -->
