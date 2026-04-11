@@ -7,28 +7,49 @@
 <body>
 <section>
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Faculty Societies</h2>
-        <a href="#" class="btn btn-primary rounded-pill px-4">
-            <i class="bi bi-plus-lg"></i>Create Society
+        <div>
+            <h2 class="fw-bold mb-0">Faculty Societies</h2>
+            <p class="text-muted mb-0">Discover and join campus societies</p>
+        </div>
+        <a th:href="@{/societies/new}" class="btn btn-primary btn-md">
+            <i class="bi bi-plus-circle me-2"></i> Create Society
         </a>
     </div>
 
-    <div class="row g-4">
-        <div class="col-md-4" th:each="s : ${societies}">
-            <div class="card shadow-sm border-0 h-100 p-3">
-                <div class="card-body text-center">
-                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                        style="width: 80px; height: 80px;">
-                        <i class="bi bi-people-fill fs-1 text-primary"></i>
+    <div class="row g-5">
+        <div class="col-lg-4 col-md-6" th:each="s : ${societies}">
+            <div class="card shadow-lg h-100 border-0 overflow-hidden">
+                <!-- Card Header with Icon -->
+                <div class="card-header bg-primary bg-opacity-10 border-bottom-0 p-4 d-flex justify-content-center">
+                    <div class="rounded-circle bg-primary bg-opacity-25 p-3 d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="bi bi-people-fill fs-2 text-primary"></i>
                     </div>
-                    <h5 class="fw-bold" th:text="${s.name}">Society Name</h5>
-                    <p class="text-muted small" th:text="${s.description}">Society Description</p>
-                    <hr>
-                    <div class="d-flex justify-content-between small mb-3">
-                        <span><i class="bi bi-person-badge me-1"></i> Admin:</span>
-                        <span class="fw-bold" th:text="${s.societyAdmin.fullName}">Admin Name</span>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body d-flex flex-column text-center p-4">
+                    <h5 class="fw-bold card-title mb-2" th:text="${s.name}">Society Name</h5>
+                    <p class="text-muted small lh-lg mb-3 flex-grow-1" th:text="${s.description}">Society Description</p>
+                    
+                    <div class="mt-auto">
+                        <span th:class="${s.active ? 'badge bg-success mx-auto mb-2 px-3 py-1' : 'badge bg-danger mx-auto mb-2 px-3 py-1'}"
+                              th:text="${s.active ? '✓ Active' : '✗ Inactive'}">Status</span>
+                        
+                        <div class="badge text-black mx-auto px-4 py-2 fw-bold fs-6 d-block" th:text="'Admin: ' + ${s.societyAdmin.fullName}"></div>
                     </div>
-                    <a th:href="@{'/societies/' + ${s.id}}" class="btn btn-outline-primary w-100 rounded-pill">View Details</a>
+                </div>
+                
+                <!-- Divider -->
+                <div class="border-top"></div>
+                
+                <!-- Card Footer with Buttons -->
+                <div class="card-footer bg-white border-0 p-2 d-grid gap-1">
+                    <a th:href="@{/societies/{id}(id=${s.id})}" class="btn btn-info btn-sm fw-bold rounded-pill">
+                        <i class="bi bi-eye me-2"></i>View Details
+                    </a>
+                    <a th:href="@{/societies/{id}/members(id=${s.id})}" class="btn btn-secondary btn-sm fw-bold rounded-pill">
+                        <i class="bi bi-people me-2"></i>Members
+                    </a>
                 </div>
             </div>
         </div>

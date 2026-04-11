@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: mainLayout(~{::section})}">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Society</title>
+</head>
+<body>
+    <section class="py-4">
+        <div class="card shadow border-0" style="max-width: 600px; margin: 0 auto;">
+            <div class="card-body p-4">
+                <h3 class="fw-bold mb-4" th:text="${society.id == null ? 'Create New Society' : 'Edit Society'}"></h3>
+
+                <form th:action="${society.id == null ? '/societies/save' : '/societies/' + society.id + '/update'}" th:object="${society}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Society Name</label>
+                        <input type="text" th:field="*{name}" class="form-control" placeholder="e.g., IEEE Student Branch" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Contact Email</label>
+                        <input type="email" th:field="*{contactEmail}" class="form-control" placeholder="e.g., society@faculty.lk" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description</label>
+                        <textarea th:field="*{description}" class="form-control" rows="4" placeholder="Describe the society..."></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Assign Administrator</label>
+                        <select th:field="*{societyAdmin}" class="form-select">
+                            <option value="">-- Select Admin --</option>
+                            <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.fullName}"></option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary" th:text="${society.id == null ? 'Create Society' : 'Update Society'}"></button>
+                        <a th:href="@{/societies}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
