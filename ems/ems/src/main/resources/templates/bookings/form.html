@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Request Venue Booking</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+  <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+  <div class="container mt-4" style="max-width:600px">
+    <h2>Request Venue Booking</h2>
+
+   
+    <div th:if="${error}" class="alert alert-danger">
+      <strong>Booking Conflict:</strong>
+      <span th:text="${error}"></span>
+    </div>
+
+    <form th:action="@{/bookings/new}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+     
+      <div class="mb-3">
+        <label class="form-label">Event</label>
+        <select name="eventId" class="form-select" required>
+          <option value="">— Select Event —</option>
+          <option th:each="e : ${events}"
+                  th:value="${e.id}"
+                  th:text="${e.title}"
+                  th:selected="${e.id == selectedEventId}">
+          </option>
+        </select>
+      </div>
+
+     
+      <div class="mb-3">
+        <label class="form-label">Venue</label>
+        <select name="venueId" class="form-select" required>
+          <option value="">— Select Venue —</option>
+          <option th:each="v : ${venues}"
+                  th:value="${v.id}"
+                  th:text="${v.name + ' (capacity: ' + v.capacity + ')'}">
+          </option>
+        </select>
+      </div>
+
+     
+      <div class="mb-3">
+        <label class="form-label">Booking Date</label>
+        <input type="date" name="bookingDate" class="form-control"
+               th:value="${booking.bookingDate}" required/>
+      </div>
+
+    
+      <div class="row mb-3">
+        <div class="col">
+          <label class="form-label">Start Time</label>
+          <input type="time" name="startTime" class="form-control"
+                 th:value="${booking.startTime}" required/>
+        </div>
+        <div class="col">
+          <label class="form-label">End Time</label>
+          <input type="time" name="endTime" class="form-control"
+                 th:value="${booking.endTime}" required/>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">Submit Booking Request</button>
+      <a th:href="@{/bookings/my}" class="btn btn-secondary w-100 mt-2">Cancel</a>
+    </form>
+  </div>
+</body>
+</html>
