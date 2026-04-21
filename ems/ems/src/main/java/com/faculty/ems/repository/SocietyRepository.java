@@ -5,9 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SocietyRepository extends JpaRepository<Society, Integer> {
     // Find all active societies for the list view
     List<Society> findByActiveTrue();
+    Optional<Society> findBySocietyAdminId(Integer adminId);
 }
