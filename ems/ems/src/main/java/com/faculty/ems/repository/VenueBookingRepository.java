@@ -46,4 +46,8 @@ public interface VenueBookingRepository extends JpaRepository<VenueBooking, Long
         @Param("endTime")     LocalTime endTime,
         @Param("excludeId")   Long excludeId
     );
+
+    List<VenueBooking> findByStatus(VenueBooking.BookingStatus status);
+
+    List<VenueBooking> findByRequestedById(Integer userId);
 }
