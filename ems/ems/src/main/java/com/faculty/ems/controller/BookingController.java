@@ -3,6 +3,7 @@ package com.faculty.ems.controller;
 import com.faculty.ems.exception.BookingConflictException;
 import com.faculty.ems.model.VenueBooking;
 import com.faculty.ems.model.User;
+import com.faculty.ems.model.Society;
 import com.faculty.ems.repository.VenueRepository;     
 import com.faculty.ems.repository.UserRepository;
 import com.faculty.ems.repository.SocietyRepository;
@@ -50,7 +51,7 @@ public class BookingController {
                                 Model model,
                                 RedirectAttributes ra) {
         User user = userRepo.findByUsername(currentUser.getUsername()).orElseThrow();
-        Society society = societyRepo.findByAdminId(user.getId()).orElseThrow();
+        Society society = societyRepo.findBySocietyAdmin_Id(user.getId()).orElseThrow();
 
         booking.setVenue(venueRepo.findById(venueId).orElseThrow());
         booking.setEvent(eventService.findById(eventId));
@@ -76,10 +77,10 @@ public class BookingController {
     public String myBookings(Model model,
                              @AuthenticationPrincipal UserDetails currentUser) {
         User user = userRepo.findByUsername(currentUser.getUsername()).orElseThrow();
-        Society society = societyRepo.findByAdminId(user.getId()).orElseThrow();
+        Society society = societyRepo.findBySocietyAdmin_Id(user.getId()).orElseThrow();
 
         model.addAttribute("bookings",
-            bookingService.getBookingsBySociety(society.getId()));
+            bookingService.getBookingsBySociety(society.getId().longValue()));
         return "bookings/list";
     }
 

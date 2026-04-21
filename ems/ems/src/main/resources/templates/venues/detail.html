@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="'Venue: ' + ${venue.name}"></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+  <style>
+    .header-banner {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+    }
+    .detail-card {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .detail-item {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .detail-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .detail-label {
+      font-weight: 600;
+      color: #667eea;
+      font-size: 0.95rem;
+      margin-bottom: 5px;
+    }
+    .facilities-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .facility-badge {
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <!-- Navigation -->
+  <nav th:replace="~{fragments/layout :: sidebar}"></nav>
+
+  <div class="container mt-5">
+
+    <!-- Header Banner -->
+    <div class="header-banner">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h1 th:text="${venue.name}" class="mb-0"></h1>
+          <p class="mb-0 mt-2 opacity-85">
+            <i class="bi bi-geo-alt me-1"></i>
+            <span th:text="${venue.location}"></span>
+          </p>
+        </div>
+        <div>
+          <span th:if="${venue.active}" class="badge bg-light text-success fs-6">
+            <i class="bi bi-check-circle me-1"></i> Active
+          </span>
+          <span th:unless="${venue.active}" class="badge bg-danger fs-6">
+            <i class="bi bi-x-circle me-1"></i> Inactive
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Details -->
+    <div class="detail-card">
+      <h5 class="mb-4"><i class="bi bi-info-circle me-2"></i>Venue Information</h5>
+
+      <!-- Capacity -->
+      <div class="detail-item">
+        <div class="detail-label"><i class="bi bi-people me-1"></i>Capacity</div>
+        <div class="h5" th:text="${venue.capacity} + ' people'"></div>
+      </div>
+
+      <!-- Description -->
+      <div class="detail-item" th:if="${venue.description}">
+        <div class="detail-label"><i class="bi bi-chat-left-text me-1"></i>Description</div>
+        <p th:text="${venue.description}" class="mb-0 text-muted"></p>
+      </div>
+
+      <!-- Location -->
+      <div class="detail-item">
+        <div class="detail-label"><i class="bi bi-geo-alt me-1"></i>Location</div>
+        <p th:text="${venue.location}" class="mb-0"></p>
+      </div>
+
+      <!-- Created Date -->
+      <div class="detail-item" th:if="${venue.created_at}">
+        <div class="detail-label"><i class="bi bi-calendar me-1"></i>Created On</div>
+        <p th:text="${#temporals.format(venue.created_at, 'dd MMMM yyyy HH:mm')}" class="mb-0 text-muted"></p>
+      </div>
+    </div>
+
+    <!-- Facilities Section -->
+    <div class="detail-card">
+      <h5 class="mb-4"><i class="bi bi-tools me-2"></i>Available Facilities</h5>
+
+      <div class="facilities-list">
+        <span th:if="${venue.has_projector}" class="facility-badge bg-info text-white">
+          <i class="bi bi-projector"></i> Projector
+        </span>
+        <span th:if="${venue.has_ac}" class="facility-badge bg-info text-white">
+          <i class="bi bi-snow"></i> Air Conditioning
+        </span>
+        <span th:if="${venue.has_sound}" class="facility-badge bg-info text-white">
+          <i class="bi bi-volume-up"></i> Sound System
+        </span>
+
+        <span th:if="${!venue.has_projector && !venue.has_ac && !venue.has_sound}" class="text-muted">
+          <i class="bi bi-dash-circle me-1"></i> Basic facilities only
+        </span>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="detail-card d-flex gap-2 flex-wrap">
+      <!-- Back Button -->
+      <a th:href="@{/venues}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Venues
+      </a>
+
+      <!-- Edit Button (Admin Only) -->
+      <a th:href="@{/venues/{id}/edit(id=${venue.id})}" 
+         class="btn btn-warning"
+         sec:authorize="hasRole('ADMIN')">
+        <i class="bi bi-pencil me-1"></i> Edit Venue
+      </a>
+
+      <!-- Book This Venue Button -->
+      <a th:href="@{/bookings/new}" 
+         class="btn btn-primary"
+         sec:authorize="hasAnyRole('ADMIN','SOCIETY_ADMIN')">
+        <i class="bi bi-calendar-check me-1"></i> Book This Venue
+      </a>
+
+      <!-- Deactivate/Activate Button (Admin Only) -->
+      <form th:action="@{/venues/{id}(id=${venue.id})}" method="post" style="display:inline">
+        <button th:if="${venue.active}" 
+                formaction="@{/venues/{id}/deactivate(id=${venue.id})}"
+                type="submit" 
+                class="btn btn-danger"
+                sec:authorize="hasRole('ADMIN')"
+                onclick="return confirm('Are you sure you want to deactivate this venue?')">
+          <i class="bi bi-toggle-off me-1"></i> Deactivate
+        </button>
+        <button th:unless="${venue.active}" 
+                formaction="@{/venues/{id}/activate(id=${venue.id})}"
+                type="submit" 
+                class="btn btn-success"
+                sec:authorize="hasRole('ADMIN')">
+          <i class="bi bi-toggle-on me-1"></i> Reactivate
+        </button>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      </form>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -33,6 +33,10 @@
       <a th:href="@{/events}" class="list-group-item list-group-item-action border-0 py-3 rounded">
         <i class="bi bi-calendar-event me-2"></i> Events
       </a>
+      <a th:href="@{/venues}" class="list-group-item list-group-item-action border-0 py-3 rounded"
+         sec:authorize="hasRole('ADMIN')">
+        <i class="bi bi-building me-2"></i> Venues
+      </a>
       <a th:href="@{/bookings/new}" class="list-group-item list-group-item-action border-0 py-3 rounded"
          sec:authorize="hasAnyRole('ADMIN', 'SOCIETY_ADMIN')">
         <i class="bi bi-plus-circle me-2"></i> Book Venue
