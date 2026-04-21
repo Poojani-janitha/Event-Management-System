@@ -1,28 +1,19 @@
 package com.faculty.ems.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.LocalDateTime;
 
 @Data
 @Entity
 @Table(name = "events")
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 public class Event {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = false)
     private String title;
 
     @Column(columnDefinition = "TEXT")
@@ -40,19 +31,18 @@ public class Event {
     @JoinColumn(name = "organiser_id", nullable = false)
     private User organiser;
 
-    @Column(name = "expected_attendees", nullable = false)
-    private int expectedAttendees;
+    @Column(name = "expected_attendees")
+    private Integer expectedAttendees;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Builder.Default
     private EventStatus status = EventStatus.DRAFT;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    public enum EventType {
+        WORKSHOP, SEMINAR, CULTURAL, COMPETITION, OTHER
+    }
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    public enum EventStatus {
+        DRAFT, PUBLISHED
+    }
 }
