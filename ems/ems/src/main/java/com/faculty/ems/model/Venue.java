@@ -1,8 +1,10 @@
 package com.faculty.ems.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import org.hibernate.boot.model.internal.XMLContext;
+
 
 import java.sql.Timestamp;
 
@@ -14,12 +16,15 @@ public class Venue {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Venue name is required")
     @Column(nullable = false, unique = true)
     private String name;
 
+    @NotBlank(message = "Venue location is required")
     @Column(nullable = false)
     private String location;
 
+    @Min(value = 1, message = "Venue capacity must be greater than 0")
     @Column(nullable = false)
     private Integer capacity;
 
