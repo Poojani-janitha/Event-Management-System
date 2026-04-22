@@ -1,10 +1,11 @@
 package com.faculty.ems.controller;
 
+//import com.faculty.ems.exception.BookingConflictException;
 import com.faculty.ems.exception.BookingConflictException;
 import com.faculty.ems.model.VenueBooking;
 import com.faculty.ems.model.User;
 import com.faculty.ems.model.Society;
-import com.faculty.ems.repository.VenueRepository;     
+import com.faculty.ems.repository.VenueRepository;
 import com.faculty.ems.repository.UserRepository;
 import com.faculty.ems.repository.SocietyRepository;
 import com.faculty.ems.service.EventService;
@@ -27,7 +28,7 @@ public class BookingController {
     private final SocietyRepository societyRepo;
     private final UserRepository userRepo;
 
-    
+
     @GetMapping("/bookings/new")
     public String showForm(@RequestParam(required = false) Long eventId,
                            Model model,
@@ -36,7 +37,7 @@ public class BookingController {
         model.addAttribute("venues", venueRepo.findByActiveTrue());
         model.addAttribute("events", eventService.findAll());
 
-        
+
         if (eventId != null) {
             model.addAttribute("selectedEventId", eventId);
         }
@@ -51,7 +52,7 @@ public class BookingController {
                                 Model model,
                                 RedirectAttributes ra) {
         User user = userRepo.findByUsername(currentUser.getUsername()).orElseThrow();
-        Society society = societyRepo.findBySocietyAdmin_Id(user.getId()).orElseThrow();
+        Society society = societyRepo.findBySocietyAdminId(user.getId()).orElseThrow();
 
         booking.setVenue(venueRepo.findById(venueId).orElseThrow());
         booking.setEvent(eventService.findById(eventId));
@@ -63,7 +64,7 @@ public class BookingController {
             ra.addFlashAttribute("success", "Booking request submitted! Awaiting admin approval.");
             return "redirect:/bookings/my";
         } catch (BookingConflictException e) {
-            
+
             model.addAttribute("error", e.getMessage());
             model.addAttribute("venues", venueRepo.findByActiveTrue());
             model.addAttribute("events", eventService.findAll());
@@ -72,19 +73,19 @@ public class BookingController {
         }
     }
 
-    
+
     @GetMapping("/bookings/my")
     public String myBookings(Model model,
                              @AuthenticationPrincipal UserDetails currentUser) {
         User user = userRepo.findByUsername(currentUser.getUsername()).orElseThrow();
-        Society society = societyRepo.findBySocietyAdmin_Id(user.getId()).orElseThrow();
+        Society society = societyRepo.findBySocietyAdminId(user.getId()).orElseThrow();
 
         model.addAttribute("bookings",
             bookingService.getBookingsBySociety(society.getId().longValue()));
         return "bookings/list";
     }
 
-    
+
     @PostMapping("/bookings/{id}/cancel")
     public String cancel(@PathVariable Long id, RedirectAttributes ra) {
         try {

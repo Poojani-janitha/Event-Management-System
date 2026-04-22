@@ -106,10 +106,20 @@ public class VenueController {
 
     @PostMapping("/{id}/delete")
     public String deleteVenue(@PathVariable Long id, RedirectAttributes ra) {
-        venueService.deleteVenue(id);
-        ra.addFlashAttribute("message", "Venue deleted successfully!");
-        ra.addFlashAttribute("messageType", "success");
-        ra.addFlashAttribute("status", "success");
+        try {
+            venueService.deleteVenue(id);
+            ra.addFlashAttribute("message", "Venue deleted successfully!");
+            ra.addFlashAttribute("messageType", "success");
+            ra.addFlashAttribute("status", "success");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("message", e.getMessage());
+            ra.addFlashAttribute("messageType", "danger");
+            ra.addFlashAttribute("status", "error");
+        } catch (Exception e) {
+            ra.addFlashAttribute("message", "Error deleting venue: " + e.getMessage());
+            ra.addFlashAttribute("messageType", "danger");
+            ra.addFlashAttribute("status", "error");
+        }
         return "redirect:/venues";
     }
 

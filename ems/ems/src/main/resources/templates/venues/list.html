@@ -22,7 +22,7 @@
     <div th:if="${message}" class="alert alert-dismissible fade show" th:classappend="'alert-' + ${messageType}" role="alert">
         <i th:class="'bi ' + (${status} == 'success' ? 'bi-check-circle' : 'bi-exclamation-circle') + ' me-2'"></i>
         <strong th:text="${status == 'success' ? 'Success!' : 'Error!'}"></strong>
-        <span th:text="${message}"></span>
+        <span th:utext="${message}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 

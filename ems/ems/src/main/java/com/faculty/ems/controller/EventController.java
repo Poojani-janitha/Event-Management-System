@@ -33,7 +33,7 @@ public class EventController {
             model.addAttribute("events", eventService.findAll());
         } else {
             
-            var society = societyRepo.findBySocietyAdmin_Id(user.getId()).orElseThrow();
+            var society = societyRepo.findBySocietyAdminId(user.getId()).orElseThrow();
             model.addAttribute("events", eventService.findBySociety(society.getId().longValue()));
         }
         return "events/list";

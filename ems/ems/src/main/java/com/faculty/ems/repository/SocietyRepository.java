@@ -11,8 +11,5 @@ import java.util.Optional;
 public interface SocietyRepository extends JpaRepository<Society, Integer> {
     // Find all active societies for the list view
     List<Society> findByActiveTrue();
-    
-    // Find society by admin ID
-    // Optional<Society> findByAdminId(Integer adminId);
-    Optional<Society> findBySocietyAdmin_Id(Integer adminId);
+    Optional<Society> findBySocietyAdminId(Integer adminId);
 }
