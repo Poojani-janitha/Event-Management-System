@@ -1,5 +1,8 @@
 package com.faculty.ems.controller;
+import com.faculty.ems.dto.BookingCalendarDTO;
 import com.faculty.ems.model.Venue;
+import com.faculty.ems.model.VenueBooking;
+import com.faculty.ems.repository.VenueBookingRepository;
 import com.faculty.ems.service.VenueService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,9 @@ import java.util.List;
 public class VenueController {
     @Autowired
     private VenueService venueService;
+
+    @Autowired
+    private VenueBookingRepository venueBookingRepository;
 
     @GetMapping
     public String listVenues(Model model) {
@@ -123,5 +129,29 @@ public class VenueController {
         return "redirect:/venues";
     }
 
-}
+    // ── Calendar API ───────────────────────────────────────────────
+    @GetMapping("/api/bookings")
+    @ResponseBody
+    public List<BookingCalendarDTO> getBookingsForMonth(
+            @RequestParam int month,
+            @RequestParam int year) {
 
+        List<VenueBooking> bookings = venueBookingRepository.findByMonthAndYear(month, year);
+
+        return bookings.stream().map(b -> {
+            BookingCalendarDTO dto = new BookingCalendarDTO();
+            dto.setBookingId(b.getId());
+            dto.setBookingDate(b.getBookingDate().toString());
+            dto.setStartTime(b.getStartTime().toString());
+            dto.setEndTime(b.getEndTime().toString());
+            dto.setStatus(b.getStatus().name());
+            dto.setEventTitle(b.getEvent().getTitle());
+            dto.setEventType(b.getEvent().getEventType().name());
+            dto.setEventDescription(b.getEvent().getDescription());
+            dto.setVenueName(b.getVenue().getName());
+            dto.setVenueLocation(b.getVenue().getLocation());
+            dto.setSocietyName(b.getSociety().getName());
+            return dto;
+        }).toList();
+    }
+}

@@ -52,4 +52,19 @@ public interface VenueBookingRepository extends JpaRepository<VenueBooking, Long
     List<VenueBooking> findByVenueId(Long venueId);
 
     List<VenueBooking> findByRequestedById(Integer userId);
+
+    @Query("""
+        SELECT b FROM VenueBooking b
+        JOIN FETCH b.event
+        JOIN FETCH b.venue
+        JOIN FETCH b.society
+        WHERE MONTH(b.bookingDate) = :month
+          AND YEAR(b.bookingDate) = :year
+          AND b.status NOT IN ('REJECTED', 'CANCELLED')
+        ORDER BY b.bookingDate, b.startTime
+    """)
+    List<VenueBooking> findByMonthAndYear(
+        @Param("month") int month,
+        @Param("year") int year
+    );
 }

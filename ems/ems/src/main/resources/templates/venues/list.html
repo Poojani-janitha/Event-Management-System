@@ -18,7 +18,7 @@
         </a>
     </div>
 
-    <!-- MESSAGE ALERT FROM VenueDto -->
+    <!-- MESSAGE ALERT -->
     <div th:if="${message}" class="alert alert-dismissible fade show" th:classappend="'alert-' + ${messageType}" role="alert">
         <i th:class="'bi ' + (${status} == 'success' ? 'bi-check-circle' : 'bi-exclamation-circle') + ' me-2'"></i>
         <strong th:text="${status == 'success' ? 'Success!' : 'Error!'}"></strong>
@@ -27,6 +27,9 @@
     </div>
 
     <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">All Venues</h5>
+        </div>
         <div class="card-body p-4">
             <table class="table table-hover">
                 <thead class="table-light">
@@ -66,6 +69,327 @@
             </div>
         </div>
     </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BOOKING CALENDAR SECTION
+         ═══════════════════════════════════════════════════════════════ -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-calendar3 me-2"></i>Venue Booking Calendar</h5>
+        </div>
+        <div class="card-body p-4">
+
+            <!-- Step 1: Month / Year Selector -->
+            <div class="row g-2 align-items-end mb-4">
+                <div class="col-auto">
+                    <label for="calMonth" class="form-label fw-semibold mb-1">Month</label>
+                    <select id="calMonth" class="form-select form-select-sm" style="width:150px"></select>
+                </div>
+                <div class="col-auto">
+                    <label for="calYear" class="form-label fw-semibold mb-1">Year</label>
+                    <select id="calYear" class="form-select form-select-sm" style="width:110px"></select>
+                </div>
+                <div class="col-auto">
+                    <button id="calShowBtn" class="btn btn-primary btn-sm" onclick="loadCalendar()">
+                        <i class="bi bi-search me-1"></i> Show
+                    </button>
+                </div>
+                <div class="col-auto ms-auto">
+                    <span class="d-flex align-items-center gap-3">
+                        <span class="d-flex align-items-center gap-1">
+                            <span style="width:14px;height:14px;border-radius:3px;background:#0d6efd;display:inline-block"></span>
+                            <small class="text-muted">Booked</small>
+                        </span>
+                        <span class="d-flex align-items-center gap-1">
+                            <span style="width:14px;height:14px;border-radius:3px;background:#e9ecef;display:inline-block"></span>
+                            <small class="text-muted">Free</small>
+                        </span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Step 2: Calendar Grid -->
+            <div id="calendarContainer">
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-calendar-week fs-1 d-block mb-2"></i>
+                    Select a month and year, then click <strong>Show</strong> to load the calendar.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         EVENT DETAILS MODAL
+         ═══════════════════════════════════════════════════════════════ -->
+    <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="eventModalLabel">
+                        <i class="bi bi-calendar-check me-2"></i>Bookings on <span id="modalDate"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" id="modalBody">
+                    <!-- Filled dynamically -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         CALENDAR STYLES
+         ═══════════════════════════════════════════════════════════════ -->
+    <style>
+        .cal-table { width: 100%; border-collapse: separate; border-spacing: 4px; }
+        .cal-table th {
+            text-align: center; padding: 8px 0; font-size: 0.8rem;
+            color: #6c757d; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .cal-table td {
+            text-align: center; padding: 0; height: 60px; width: 14.28%;
+            border-radius: 10px; vertical-align: middle; position: relative;
+            transition: all 0.2s ease;
+        }
+        .cal-day {
+            font-weight: 500; font-size: 0.95rem; color: #333;
+            width: 100%; height: 100%; display: flex; align-items: center;
+            justify-content: center; flex-direction: column; border-radius: 10px;
+            border: 1px solid #e9ecef; background: #fff;
+        }
+        .cal-day:hover { background: #f0f4ff; }
+        .cal-day.booked {
+            background: linear-gradient(135deg, #0d6efd 0%, #4a8eff 100%);
+            color: #fff; cursor: pointer; border-color: transparent;
+            box-shadow: 0 2px 8px rgba(13,110,253,0.25);
+        }
+        .cal-day.booked:hover {
+            background: linear-gradient(135deg, #0a58ca 0%, #3d7be8 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13,110,253,0.35);
+        }
+        .cal-day.booked .booking-count {
+            font-size: 0.65rem; margin-top: 2px; opacity: 0.85;
+        }
+        .cal-day.today { border: 2px solid #ffc107; }
+        .cal-day.empty { border: none; background: transparent; }
+        .cal-month-title { font-size: 1.2rem; font-weight: 700; color: #333; }
+
+        /* Event card inside modal */
+        .event-card {
+            border-left: 4px solid #0d6efd; border-radius: 8px;
+            padding: 16px; margin-bottom: 12px;
+            background: #f8f9ff; transition: all 0.2s;
+        }
+        .event-card:hover { background: #eef2ff; }
+        .event-card:last-child { margin-bottom: 0; }
+        .event-card .event-title { font-weight: 600; font-size: 1.05rem; color: #1a1a2e; }
+        .event-card .event-meta { font-size: 0.85rem; color: #6c757d; }
+    </style>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         CALENDAR JAVASCRIPT
+         ═══════════════════════════════════════════════════════════════ -->
+    <script th:inline="javascript">
+        /*  ─── State ──────────────────────────────────────── */
+        let bookingsCache = [];   // bookings for the currently loaded month
+
+        const MONTH_NAMES = [
+            'January','February','March','April','May','June',
+            'July','August','September','October','November','December'
+        ];
+        const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+        /*  ─── Initialise selectors on page load ─────────── */
+        (function init() {
+            const now   = new Date();
+            const mSel  = document.getElementById('calMonth');
+            const ySel  = document.getElementById('calYear');
+
+            // Populate months
+            MONTH_NAMES.forEach((name, i) => {
+                const opt = document.createElement('option');
+                opt.value = i + 1;
+                opt.textContent = name;
+                if (i === now.getMonth()) opt.selected = true;
+                mSel.appendChild(opt);
+            });
+
+            // Populate years (current ± 3)
+            for (let y = now.getFullYear() - 3; y <= now.getFullYear() + 3; y++) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                if (y === now.getFullYear()) opt.selected = true;
+                ySel.appendChild(opt);
+            }
+
+            // Auto-load current month
+            loadCalendar();
+        })();
+
+        /*  ─── Step A: Fetch bookings from API ───────────── */
+        function loadCalendar() {
+            const month = parseInt(document.getElementById('calMonth').value);
+            const year  = parseInt(document.getElementById('calYear').value);
+            const container = document.getElementById('calendarContainer');
+
+            container.innerHTML = `
+                <div class="text-center text-muted py-5">
+                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                    Loading bookings...
+                </div>`;
+
+            fetch(`/venues/api/bookings?month=${month}&year=${year}`)
+                .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+                .then(data => {
+                    bookingsCache = data;
+                    renderCalendar(month, year);
+                })
+                .catch(err => {
+                    container.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Failed to load bookings. ${err.message}
+                        </div>`;
+                });
+        }
+
+        /*  ─── Step B: Render the calendar grid ──────────── */
+        function renderCalendar(month, year) {
+            const container = document.getElementById('calendarContainer');
+            const today     = new Date();
+            const firstDay  = new Date(year, month - 1, 1).getDay();  // 0=Sun
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            // Build a set of booked dates for quick lookup
+            const bookedDates = {};
+            bookingsCache.forEach(b => {
+                if (!bookedDates[b.bookingDate]) bookedDates[b.bookingDate] = 0;
+                bookedDates[b.bookingDate]++;
+            });
+
+            let html = `
+                <div class="d-flex justify-content-center mb-3">
+                    <span class="cal-month-title">${MONTH_NAMES[month - 1]} ${year}</span>
+                </div>
+                <table class="cal-table">
+                <thead><tr>`;
+
+            DAY_NAMES.forEach(d => html += `<th>${d}</th>`);
+            html += '</tr></thead><tbody><tr>';
+
+            // Leading empty cells
+            for (let i = 0; i < firstDay; i++) {
+                html += '<td><div class="cal-day empty"></div></td>';
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                const isToday = (today.getFullYear() === year && today.getMonth() === month - 1 && today.getDate() === day);
+                const count   = bookedDates[dateStr] || 0;
+
+                let cls = 'cal-day';
+                if (isToday) cls += ' today';
+                if (count > 0) cls += ' booked';
+
+                const onclick = count > 0 ? `onclick="showDateDetails('${dateStr}')"` : '';
+                const badge   = count > 0 ? `<span class="booking-count">${count} booking${count > 1 ? 's' : ''}</span>` : '';
+
+                html += `<td><div class="${cls}" ${onclick}>${day}${badge}</div></td>`;
+
+                // End of row
+                if ((firstDay + day) % 7 === 0 && day !== daysInMonth) {
+                    html += '</tr><tr>';
+                }
+            }
+
+            // Trailing empty cells
+            const lastDay = (firstDay + daysInMonth) % 7;
+            if (lastDay !== 0) {
+                for (let i = lastDay; i < 7; i++) {
+                    html += '<td><div class="cal-day empty"></div></td>';
+                }
+            }
+
+            html += '</tr></tbody></table>';
+            container.innerHTML = html;
+        }
+
+        /*  ─── Step C: Show event details on date click ──── */
+        function showDateDetails(dateStr) {
+            const dayBookings = bookingsCache.filter(b => b.bookingDate === dateStr);
+            if (dayBookings.length === 0) return;
+
+            // Format the date nicely
+            const d = new Date(dateStr + 'T00:00:00');
+            const formattedDate = d.toLocaleDateString('en-US', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+            document.getElementById('modalDate').textContent = formattedDate;
+
+            // Build event cards
+            let body = '';
+            dayBookings.forEach(b => {
+                const statusClass = b.status === 'APPROVED'
+                    ? 'bg-success' : b.status === 'PENDING'
+                    ? 'bg-warning text-dark' : 'bg-secondary';
+
+                body += `
+                <div class="event-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="event-title">${escapeHtml(b.eventTitle)}</span>
+                        <span class="badge ${statusClass}">${b.status}</span>
+                    </div>
+                    <div class="row event-meta">
+                        <div class="col-md-6 mb-1">
+                            <i class="bi bi-tag me-1"></i> <strong>Type:</strong> ${b.eventType}
+                        </div>
+                        <div class="col-md-6 mb-1">
+                            <i class="bi bi-building me-1"></i> <strong>Venue:</strong> ${escapeHtml(b.venueName)}
+                        </div>
+                        <div class="col-md-6 mb-1">
+                            <i class="bi bi-geo-alt me-1"></i> <strong>Location:</strong> ${escapeHtml(b.venueLocation || '-')}
+                        </div>
+                        <div class="col-md-6 mb-1">
+                            <i class="bi bi-people me-1"></i> <strong>Society:</strong> ${escapeHtml(b.societyName)}
+                        </div>
+                        <div class="col-md-6 mb-1">
+                            <i class="bi bi-clock me-1"></i> <strong>Time:</strong> ${formatTime(b.startTime)} – ${formatTime(b.endTime)}
+                        </div>
+                    </div>
+                    ${b.eventDescription ? `<div class="mt-2 text-muted" style="font-size:0.85rem"><i class="bi bi-info-circle me-1"></i>${escapeHtml(b.eventDescription)}</div>` : ''}
+                </div>`;
+            });
+
+            document.getElementById('modalBody').innerHTML = body;
+            new bootstrap.Modal(document.getElementById('eventModal')).show();
+        }
+
+        /*  ─── Helpers ───────────────────────────────────── */
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function formatTime(timeStr) {
+            // "09:00" or "09:00:00" → "09:00 AM"
+            if (!timeStr) return '';
+            const parts = timeStr.split(':');
+            let h = parseInt(parts[0]), m = parts[1];
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            if (h > 12) h -= 12;
+            if (h === 0) h = 12;
+            return `${h}:${m} ${ampm}`;
+        }
+    </script>
+
 </section>
 </body>
-</html>
+</html>
