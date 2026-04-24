@@ -33,14 +33,7 @@ public class BookingController {
     public String showForm(@RequestParam(required = false) Long eventId,
                            Model model,
                            @AuthenticationPrincipal UserDetails currentUser) {
-        model.addAttribute("booking", new VenueBooking());
-        model.addAttribute("venues", venueRepo.findByActiveTrue());
-        model.addAttribute("events", eventService.findAll());
-
-
-        if (eventId != null) {
-            model.addAttribute("selectedEventId", eventId);
-        }
+        populateBookingFormModel(model, new VenueBooking(), eventId);
         return "bookings/form";
     }
 
@@ -52,7 +45,12 @@ public class BookingController {
                                 Model model,
                                 RedirectAttributes ra) {
         User user = userRepo.findByUsername(currentUser.getUsername()).orElseThrow();
-        Society society = societyRepo.findBySocietyAdminId(user.getId()).orElseThrow();
+        Society society = societyRepo.findBySocietyAdminId(user.getId()).orElse(null);
+        if (society == null) {
+            populateBookingFormModel(model, booking, eventId);
+            model.addAttribute("error", "Your account is not linked to any society. Please contact admin.");
+            return "bookings/form";
+        }
 
         booking.setVenue(venueRepo.findById(venueId).orElseThrow());
         booking.setEvent(eventService.findById(eventId));
@@ -64,11 +62,8 @@ public class BookingController {
             ra.addFlashAttribute("success", "Booking request submitted! Awaiting admin approval.");
             return "redirect:/bookings/my";
         } catch (BookingConflictException e) {
-
+            populateBookingFormModel(model, booking, eventId);
             model.addAttribute("error", e.getMessage());
-            model.addAttribute("venues", venueRepo.findByActiveTrue());
-            model.addAttribute("events", eventService.findAll());
-            model.addAttribute("booking", booking);
             return "bookings/form";
         }
     }
@@ -78,11 +73,25 @@ public class BookingController {
     public String myBookings(Model model,
                              @AuthenticationPrincipal UserDetails currentUser) {
         User user = userRepo.findByUsername(currentUser.getUsername()).orElseThrow();
-        Society society = societyRepo.findBySocietyAdminId(user.getId()).orElseThrow();
+        Society society = societyRepo.findBySocietyAdminId(user.getId()).orElse(null);
+        if (society == null) {
+            model.addAttribute("bookings", java.util.Collections.emptyList());
+            model.addAttribute("error", "Your account is not linked to any society. Please contact admin.");
+            return "bookings/list";
+        }
 
         model.addAttribute("bookings",
             bookingService.getBookingsBySociety(society.getId().longValue()));
         return "bookings/list";
+    }
+
+    private void populateBookingFormModel(Model model, VenueBooking booking, Long selectedEventId) {
+        model.addAttribute("booking", booking);
+        model.addAttribute("venues", venueRepo.findByActiveTrue());
+        model.addAttribute("events", eventService.findAll());
+        if (selectedEventId != null) {
+            model.addAttribute("selectedEventId", selectedEventId);
+        }
     }
 
 
