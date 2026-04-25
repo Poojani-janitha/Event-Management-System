@@ -1,47 +1,50 @@
 package com.faculty.ems.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import java.time.LocalDateTime;
+
+
+import java.sql.Timestamp;
 
 @Data
 @Entity
 @Table(name = "venues")
 public class Venue {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @NotBlank(message = "Venue name is required")
+    @Column(nullable = false, unique = true)
     private String name;
 
+    @NotBlank(message = "Venue location is required")
     @Column(nullable = false)
     private String location;
 
+    @Min(value = 1, message = "Venue capacity must be greater than 0")
     @Column(nullable = false)
     private Integer capacity;
 
-    @Column(name = "has_projector", nullable = false)
-    private Boolean hasProjector = false;
+    @Column(nullable = false)
+    private Boolean has_projector = false;
 
-    @Column(name = "has_ac", nullable = false)
-    private Boolean hasAc = false;
+    @Column(nullable = false)
+    private Boolean has_ac = false;
 
-    @Column(name = "has_sound", nullable = false)
-    private Boolean hasSound = false;
+    @Column(nullable = false)
+    private Boolean has_sound = false;
+
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "active")
     private Boolean active = true;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
+    @org.hibernate.annotations.CreationTimestamp
+    @Column(name = "created_at",updatable = false)
+    private Timestamp created_at;
 }

@@ -54,6 +54,7 @@ public class EventService {
         List<VenueBooking> approved = bookingRepo
             .findByEventIdOrderByBookingDateDesc(eventId)
             .stream()
+            .filter(b -> b.getEvent().getId().equals(eventId))
             .filter(b -> b.getStatus() == VenueBooking.BookingStatus.APPROVED)
             .toList();
 

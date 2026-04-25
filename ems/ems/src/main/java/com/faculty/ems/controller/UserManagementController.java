@@ -1,6 +1,5 @@
 package com.faculty.ems.controller;
 
-
 import com.faculty.ems.dto.SocietyAdminRequestDto;
 import com.faculty.ems.dto.UserEditDto;
 import com.faculty.ems.model.Role;
@@ -38,8 +37,7 @@ public class UserManagementController {
         User user = userService.findUserById(id);
         UserEditDto dto = new UserEditDto(
                 user.getId(), user.getUsername(), user.getEmail(),
-                user.getFullName(), null, user.getRole(), user.isEnabled()
-        );
+                user.getFullName(), null, user.getRole(), user.isEnabled());
         model.addAttribute("user", dto);
         model.addAttribute("roles", Role.values());
         return "user/edit";
@@ -47,10 +45,10 @@ public class UserManagementController {
 
     @PostMapping("/{id}/edit")
     public String updateUser(@PathVariable Integer id,
-                             @Valid @ModelAttribute("user") UserEditDto dto,
-                             BindingResult result,
-                             Model model,
-                             RedirectAttributes ra) {
+            @Valid @ModelAttribute("user") UserEditDto dto,
+            BindingResult result,
+            Model model,
+            RedirectAttributes ra) {
         if (result.hasErrors()) {
             model.addAttribute("roles", Role.values());
             return "user/edit";

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: mainLayout(~{::content})}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venue Management</title>
+    <section th:fragment="content">
+        <style>
+            .calendar-grid {
+                position: relative;
+                width: 525px;
+                /* 75 * 7 */
+                height: 500px;
+                /* 50 + 6 * 75 */
+                margin: 0 auto;
+            }
+
+            .calendar-header-day {
+                width: 75px;
+                height: 50px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: #4A5565;
+                font-size: 14px;
+                font-family: Inter;
+                font-weight: 700;
+                position: absolute;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .calendar-cell {
+                width: 75px;
+                height: 75px;
+                position: absolute;
+                border: 1px solid #f0f0f0;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                cursor: default;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                background: #fff;
+            }
+
+            .calendar-cell.has-bookings {
+                background: #2B7FFF;
+                color: white;
+                cursor: pointer;
+                border: none;
+                box-shadow: 0 4px 6px rgba(43, 127, 255, 0.1);
+            }
+
+            .calendar-cell.has-bookings:hover {
+                background: #1A6FFF;
+                transform: translateY(-2px) scale(1.05);
+                z-index: 10;
+                border-radius: 12px;
+                box-shadow: 0 10px 15px rgba(43, 127, 255, 0.3);
+            }
+
+            .calendar-cell .day-num {
+                font-size: 18px;
+                font-weight: 600;
+            }
+
+            .calendar-cell .booking-count {
+                font-size: 12px;
+                font-weight: 500;
+                opacity: 0.9;
+            }
+
+            .booking-item {
+                border-left: 5px solid #2B7FFF;
+                padding: 1.25rem;
+                margin-bottom: 1rem;
+                background: #f8faff;
+                border-radius: 0 16px 16px 0;
+                transition: all 0.3s;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            }
+
+            .booking-item:hover {
+                background: #eff4ff;
+                transform: translateX(8px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            }
+
+            #sideDetailView {
+                max-height: 600px;
+                overflow-y: auto;
+                scrollbar-width: thin;
+            }
+
+            .calendar-card {
+                background: white;
+                border-radius: 24px;
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+                border: none;
+            }
+
+            .badge-venue {
+                background: #e9ecef;
+                color: #495057;
+                font-weight: 600;
+                font-size: 0.75rem;
+                padding: 0.4em 0.8em;
+                border-radius: 6px;
+            }
+
+            .filter-section {
+                background: #fdfdfd;
+                border: 1px solid #eee;
+                border-radius: 16px;
+                padding: 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .filter-label {
+                font-size: 0.8rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                color: #6c757d;
+                margin-bottom: 0.5rem;
+                display: block;
+            }
+        </style>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+            <div>
+                <h2 class="fw-bold mb-0 text-dark">Venue Management</h2>
+                <p class="text-muted mb-0">Browse and manage venue bookings in a grid view</p>
+            </div>
+            <a th:href="@{/venues/addVenue}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+                <i class="bi bi-plus-lg me-2"></i> Add New Venue
+            </a>
+        </div>
+
+        <!-- Calendar and Details Row (9/12 and 3/12 Ratio) -->
+        <div class="row g-4 mb-5">
+            <!-- Calendar Column (3/4 size) -->
+
+            <!-- Details Column (1/4 size) -->
+
+            <!-- Hidden Storage -->
+
+            <!-- Venue Table -->
+            <div class="card calendar-card border-0 mb-5">
+                <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Registered Venues</h5>
+                    <button class="btn btn-sm btn-light rounded-pill px-3" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#filterCollapse">
+                        <i class="bi bi-filter me-2"></i> Filter List
+                    </button>
+                </div>
+                <div class="collapse" id="filterCollapse"
+                    th:classappend="${filterCriteria.searchTerm != null or filterCriteria.minCapacity != null or filterCriteria.active != null} ? 'show' : ''">
+                    <div class="px-4 pt-3">
+                        <form th:action="@{/venues}" method="get" class="filter-section shadow-sm">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="filter-label">Search Venue</label>
+                                    <input type="text" name="searchTerm"
+                                        class="form-control rounded-pill border-0 bg-light filter-input"
+                                        placeholder="Name or Location..." th:value="${filterCriteria.searchTerm}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="filter-label">Min Capacity</label>
+                                    <input type="number" name="minCapacity"
+                                        class="form-control rounded-pill border-0 bg-light filter-input"
+                                        placeholder="Seats..." th:value="${filterCriteria.minCapacity}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="filter-label">Status</label>
+                                    <select name="activeStatus"
+                                        class="form-select rounded-pill border-0 bg-light filter-input">
+                                        <option value="">All Statuses</option>
+                                        <option value="true" th:selected="${filterCriteria.active == true}">Active Only
+                                        </option>
+                                        <option value="false" th:selected="${filterCriteria.active == false}">Inactive
+                                            Only
+                                        </option>
+                                    </select>
+                                </div>
+
+                            </div>
+                            <div class="mt-2 text-end"
+                                th:if="${filterCriteria.searchTerm != null or filterCriteria.minCapacity != null or filterCriteria.active != null}">
+                                <a th:href="@{/venues}" class="text-decoration-none small text-muted">
+                                    <i class="bi bi-x-circle me-1"></i> Clear Filters
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body p-4" id="venueTableContainer">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr class="small text-uppercase text-muted">
+                                    <th class="py-3">Venue Name</th>
+                                    <th class="py-3">Location</th>
+                                    <th class="py-3">Capacity</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="py-3 text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="venue : ${venues}">
+                                    <td class="fw-bold py-3" th:text="${venue.name}"></td>
+                                    <td th:text="${venue.location}"></td>
+                                    <td>
+                                        <span class="badge bg-light text-dark fw-normal px-3"
+                                            th:text="${venue.capacity + ' seats'}"></span>
+                                    </td>
+                                    <td>
+                                        <span
+                                            th:class="${venue.active} ? 'badge bg-success-subtle text-success px-3' : 'badge bg-danger-subtle text-danger px-3'"
+                                            th:text="${venue.active} ? 'Active' : 'Inactive'">
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a th:href="@{/venues/{id}(id=${venue.id})}"
+                                                class="btn btn-sm btn-info text-white rounded-pill px-3 shadow-sm">View</a>
+                                            <a th:href="@{/venues/{id}/edit(id=${venue.id})}"
+                                                class="btn btn-sm btn-warning rounded-pill px-3 shadow-sm">Edit</a>
+                                            <form th:action="@{/venues/{id}/delete(id=${venue.id})}" method="post"
+                                                class="d-inline">
+                                                <button type="submit"
+                                                    class="btn btn-sm btn-danger rounded-pill px-3 shadow-sm"
+                                                    onclick="return confirm('Are you sure you want to delete this venue? This action cannot be undone.')">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function showServerBookingDetails(day) {
+                    const yearSelect = document.getElementById('yearSelect');
+                    const monthSelect = document.getElementById('monthSelect');
+                    const year = yearSelect ? yearSelect.value : new Date().getFullYear();
+                    const month = monthSelect ? monthSelect.value : new Date().getMonth() + 1;
+
+                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    document.getElementById('selectedDateDisplay').textContent = `${monthNames[month - 1]} ${day}, ${year}`;
+
+                    const container = document.getElementById('bookingDetailsContainer');
+                    const emptyMsg = document.getElementById('emptyDetailMessage');
+                    container.innerHTML = '';
+
+                    const data = document.getElementById('bookings-day-' + day);
+                    if (data) {
+                        data.querySelectorAll('.booking-item-data').forEach(item => {
+                            const title = item.getAttribute('data-title');
+                            const venue = item.getAttribute('data-venue');
+                            const time = item.getAttribute('data-time');
+                            const society = item.getAttribute('data-society');
+                            const status = item.getAttribute('data-status');
+                            const note = item.getAttribute('data-note');
+
+                            const div = document.createElement('div');
+                            div.className = 'booking-item';
+                            div.innerHTML = `
+                    <div class="mb-3">
+                        <span class="badge-venue mb-2 d-inline-block">${venue}</span>
+                        <h6 class="fw-bold mb-1">${title}</h6>
+                        <div class="extra-small text-muted mb-2">
+                            <i class="bi bi-clock me-1"></i> ${time}
+                        </div>
+                        <div class="extra-small text-muted mb-1">
+                            <strong>Society:</strong> ${society}
+                        </div>
+                        ${(note && note !== 'null' && note !== '') ? `<div class="mt-2 pt-2 border-top extra-small text-muted fst-italic">"${note}"</div>` : ''}
+                    </div>
+                `;
+                            container.appendChild(div);
+                        });
+                        emptyMsg.style.display = 'none';
+                        container.style.display = 'block';
+                    } else {
+                        emptyMsg.style.display = 'block';
+                        container.style.display = 'none';
+                    }
+                }
+
+                // --- Live Filter Logic ---
+                let filterTimeout;
+                const filterInputs = document.querySelectorAll('.filter-input');
+                const tableContainer = document.getElementById('venueTableContainer');
+
+                filterInputs.forEach(input => {
+                    input.addEventListener('input', () => {
+                        clearTimeout(filterTimeout);
+                        filterTimeout = setTimeout(applyFilters, 300); // 300ms debounce
+                    });
+                });
+
+                async function applyFilters() {
+                    const searchTerm = document.querySelector('input[name="searchTerm"]').value;
+                    const minCapacity = document.querySelector('input[name="minCapacity"]').value;
+                    const activeStatus = document.querySelector('select[name="activeStatus"]').value;
+
+                    // Build the URL with current parameters
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('searchTerm', searchTerm);
+                    url.searchParams.set('minCapacity', minCapacity);
+                    url.searchParams.set('activeStatus', activeStatus);
+
+                    // Update browser URL without reloading
+                    window.history.replaceState({}, '', url);
+
+                    try {
+                        const response = await fetch(url);
+                        const html = await response.text();
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+
+                        // Only replace the table content
+                        const newContent = doc.getElementById('venueTableContainer').innerHTML;
+                        tableContainer.innerHTML = newContent;
+                    } catch (error) {
+                        console.error('Error filtering venues:', error);
+                    }
+                }
+            </script>
+    </section>
+    </body>
+
+</html>
