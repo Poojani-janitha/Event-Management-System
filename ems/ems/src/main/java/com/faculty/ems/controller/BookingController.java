@@ -46,8 +46,8 @@ public class BookingController {
 
     @PostMapping("/bookings/new")
     public String submitBooking(@ModelAttribute VenueBooking booking,
-                                @RequestParam Long venueId,
-                                @RequestParam Long eventId,
+                                @RequestParam long venueId,
+                                @RequestParam long eventId,
                                 @AuthenticationPrincipal UserDetails currentUser,
                                 Model model,
                                 RedirectAttributes ra) {

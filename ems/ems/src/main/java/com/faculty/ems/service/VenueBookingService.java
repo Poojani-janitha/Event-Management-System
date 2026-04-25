@@ -12,6 +12,7 @@ import java.util.List;
 public class VenueBookingService {
 
     private final VenueBookingRepository bookingRepo;
+    private final EmailService emailService;
 
     
     public VenueBooking requestBooking(VenueBooking booking) {
@@ -36,22 +37,44 @@ public class VenueBookingService {
         return bookingRepo.save(booking);
     }
 
-    public List<VenueBooking> getBookingsBySociety(Long societyId) {
+    public List<VenueBooking> getBookingsBySociety(long societyId) {
         return bookingRepo.findBySocietyIdOrderByBookingDateDesc(societyId);
     }
 
-    public VenueBooking findById(Long id) {
+    public VenueBooking findById(long id) {
         return bookingRepo.findById(id)
             .orElseThrow(() -> new RuntimeException("Booking not found: " + id));
     }
 
     
-    public void cancelBooking(Long bookingId) {
+    public void cancelBooking(long bookingId) {
         VenueBooking booking = findById(bookingId);
         if (booking.getStatus() != VenueBooking.BookingStatus.PENDING) {
             throw new RuntimeException("Only PENDING bookings can be cancelled.");
         }
         booking.setStatus(VenueBooking.BookingStatus.CANCELLED);
         bookingRepo.save(booking);
+    }
+
+    public void approveBooking(long id, String note) {
+        VenueBooking booking = findById(id);
+        if (booking.getStatus() != VenueBooking.BookingStatus.PENDING) {
+            throw new RuntimeException("Only pending bookings can be approved.");
+        }
+        booking.setStatus(VenueBooking.BookingStatus.APPROVED);
+        booking.setAdminNote(note);
+        VenueBooking saved = bookingRepo.save(booking);
+        emailService.sendBookingStatusEmail(saved);
+    }
+
+    public void rejectBooking(long id, String reason) {
+        VenueBooking booking = findById(id);
+        if (booking.getStatus() != VenueBooking.BookingStatus.PENDING) {
+            throw new RuntimeException("Only pending bookings can be rejected.");
+        }
+        booking.setStatus(VenueBooking.BookingStatus.REJECTED);
+        booking.setAdminNote(reason);
+        VenueBooking saved = bookingRepo.save(booking);
+        emailService.sendBookingStatusEmail(saved);
     }
 }

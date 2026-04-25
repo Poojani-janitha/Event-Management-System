@@ -35,14 +35,16 @@ public class UserService {
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .fullName(dto.getFullName())
                 .build();
-        userRepository.save(user);
+        if (user != null) {
+            userRepository.save(user);
+        }
     }
 
     public List<User> findAllUsers() {
         return userRepository.findAll();
     }
 
-    public User findUserById(Integer id) {
+    public User findUserById(int id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
     }
@@ -57,7 +59,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void deleteUser(Integer id) {
+    public void deleteUser(int id) {
         if (!userRepository.existsById(id)) {
             throw new EntityNotFoundException("User not found with id: " + id);
         }

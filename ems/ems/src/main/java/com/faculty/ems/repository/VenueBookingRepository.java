@@ -1,6 +1,8 @@
 package com.faculty.ems.repository;
 
 import com.faculty.ems.model.VenueBooking;
+import com.faculty.ems.model.VenueBooking.BookingStatus;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -53,18 +55,36 @@ public interface VenueBookingRepository extends JpaRepository<VenueBooking, Long
 
     List<VenueBooking> findByRequestedById(Integer userId);
 
+
     @Query("""
         SELECT b FROM VenueBooking b
         JOIN FETCH b.event
         JOIN FETCH b.venue
         JOIN FETCH b.society
-        WHERE MONTH(b.bookingDate) = :month
-          AND YEAR(b.bookingDate) = :year
-          AND b.status NOT IN ('REJECTED', 'CANCELLED')
+        WHERE b.venue.id = :venueId
+          AND b.bookingDate BETWEEN :startDate AND :endDate
+          AND b.status = :status
         ORDER BY b.bookingDate, b.startTime
     """)
-    List<VenueBooking> findByMonthAndYear(
-        @Param("month") int month,
-        @Param("year") int year
+    List<VenueBooking> findByVenueIdAndBookingDateBetweenAndStatus(
+            @Param("venueId") Long venueId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("status") BookingStatus status
+    );
+
+    @Query("""
+        SELECT b FROM VenueBooking b
+        JOIN FETCH b.event
+        JOIN FETCH b.venue
+        JOIN FETCH b.society
+        WHERE b.bookingDate BETWEEN :startDate AND :endDate
+          AND b.status = :status
+        ORDER BY b.bookingDate, b.startTime
+    """)
+    List<VenueBooking> findByBookingDateBetweenAndStatus(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("status") BookingStatus status
     );
 }
