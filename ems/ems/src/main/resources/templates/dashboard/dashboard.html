@@ -8,20 +8,229 @@
 
 <body>
     <section>
-        <h4 class="mb-4">Welcome, <span th:text="${username}"></span></h4>
+    <style>
+        .calendar-grid {
+            position: relative;
+            width: 525px;
+            /* 75 * 7 */
+            height: 500px;
+            /* 50 + 6 * 75 */
+            margin: 0 auto;
+        }
 
-        <div class="card shadow-sm mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Venue Calendar</h5>
-                <a th:href="@{/calendar}" class="btn btn-sm btn-outline-primary">Open Full Calendar</a>
-            </div>
-            <div class="card-body p-0">
-                <iframe th:src="@{/calendar}"
-                        title="Venue Calendar"
-                        style="width:100%; height:520px; border:0;">
-                </iframe>
+        .calendar-header-day {
+            width: 75px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #4A5565;
+            font-size: 14px;
+            font-family: Inter;
+            font-weight: 700;
+            position: absolute;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .calendar-cell {
+            width: 75px;
+            height: 75px;
+            position: absolute;
+            border: 1px solid #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: default;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #fff;
+        }
+
+        .calendar-cell.has-bookings {
+            background: #2B7FFF;
+            color: white;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 6px rgba(43, 127, 255, 0.1);
+        }
+
+        .calendar-cell.has-bookings:hover {
+            background: #1A6FFF;
+            transform: translateY(-2px) scale(1.05);
+            z-index: 10;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px rgba(43, 127, 255, 0.3);
+        }
+
+        .calendar-cell .day-num {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .calendar-cell .booking-count {
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .booking-item {
+            border-left: 5px solid #2B7FFF;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            background: #f8faff;
+            border-radius: 0 16px 16px 0;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .booking-item:hover {
+            background: #eff4ff;
+            transform: translateX(8px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        #sideDetailView {
+            max-height: 600px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .calendar-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+            border: none;
+        }
+
+        .badge-venue {
+            background: #e9ecef;
+            color: #495057;
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 0.4em 0.8em;
+            border-radius: 6px;
+        }
+    </style>
+    <h4 class="mb-4">Welcome, <span th:text="${username}"></span></h4>
+
+    <!-- Calendar and Details Row (9/12 and 3/12 Ratio) -->
+    <div class="row g-4 mb-5">
+        <!-- Calendar Column (3/4 size) -->
+        <div class="col-lg-9">
+            <div class="card calendar-card h-100">
+                <div class="card-body p-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h4 class="fw-bold mb-0 d-flex align-items-center">
+                            <i class="bi bi-calendar3 text-primary me-3"></i>
+                            Booking Calendar
+                        </h4>
+                        <form id="calendarForm" th:action="@{/dashboard}" method="get" class="d-flex gap-3">
+                            <select id="monthSelect" name="month" class="form-select rounded-pill px-4 shadow-sm"
+                                    style="min-width: 140px;" onchange="this.form.submit()">
+                                <option value="1" th:selected="${currentMonth == 1}">January</option>
+                                <option value="2" th:selected="${currentMonth == 2}">February</option>
+                                <option value="3" th:selected="${currentMonth == 3}">March</option>
+                                <option value="4" th:selected="${currentMonth == 4}">April</option>
+                                <option value="5" th:selected="${currentMonth == 5}">May</option>
+                                <option value="6" th:selected="${currentMonth == 6}">June</option>
+                                <option value="7" th:selected="${currentMonth == 7}">July</option>
+                                <option value="8" th:selected="${currentMonth == 8}">August</option>
+                                <option value="9" th:selected="${currentMonth == 9}">September</option>
+                                <option value="10" th:selected="${currentMonth == 10}">October</option>
+                                <option value="11" th:selected="${currentMonth == 11}">November</option>
+                                <option value="12" th:selected="${currentMonth == 12}">December</option>
+                            </select>
+                            <select id="yearSelect" name="year" class="form-select rounded-pill px-4 shadow-sm"
+                                    style="min-width: 110px;" onchange="this.form.submit()">
+                                <option value="2024" th:selected="${currentYear == 2024}">2024</option>
+                                <option value="2025" th:selected="${currentYear == 2025}">2025</option>
+                                <option value="2026" th:selected="${currentYear == 2026}">2026</option>
+                                <option value="2027" th:selected="${currentYear == 2027}">2027</option>
+                                <option value="2028" th:selected="${currentYear == 2028}">2028</option>
+                            </select>
+                        </form>
+                    </div>
+
+                    <div class="calendar-grid">
+                        <!-- Headers -->
+                        <div th:each="dayName, iterStat : ${#strings.arraySplit('Sun,Mon,Tue,Wed,Thu,Fri,Sat', ',')}"
+                             class="calendar-header-day"
+                             th:style="'left: ' + ${headerPositions[iterStat.index]} + 'px; top: 0px;'">
+                            <span th:text="${dayName}">Sun</span>
+                        </div>
+
+                        <!-- Days -->
+                        <th:block th:if="${calendar != null}">
+                            <!-- Empty cells -->
+                            <div th:if="${offset > 0}" th:each="i : ${#numbers.sequence(0, offset - 1)}"
+                                 class="calendar-cell" style="background: #fafafa; opacity: 0.5;"
+                                 th:styleappend="'left: ' + ${cellLefts[i]} + 'px; top: ' + ${cellTops[i]} + 'px;'">
+                            </div>
+
+                            <!-- Real Days -->
+                            <div th:each="day : ${#numbers.sequence(1, calendar.daysInMonth)}"
+                                 th:with="bookings=${calendar.bookingsByDay.get(day)}, hasBookings=${bookings != null and !bookings.empty}, posIndex=${offset + day - 1}"
+                                 class="calendar-cell shadow-sm"
+                                 th:classappend="${hasBookings} ? 'has-bookings' : ''"
+                                 th:style="'left: ' + ${cellLefts[posIndex]} + 'px; top: ' + ${cellTops[posIndex]} + 'px;'"
+                                 th:onclick="${hasBookings} ? 'showServerBookingDetails(' + ${day} + ')' : ''">
+
+                                <span class="day-num" th:text="${day}">1</span>
+                                <span th:if="${hasBookings}" class="booking-count"
+                                      th:text="'(' + ${bookings.size()} + ')'"></span>
+                            </div>
+                        </th:block>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-5 mt-2 pt-2 border-top">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width: 14px; height: 14px; background: #2B7FFF; border-radius: 4px;"></div>
+                            <span class="small fw-semibold text-muted">Confirmed Bookings</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div
+                                    style="width: 14px; height: 14px; background: #fff; border: 1px solid #ddd; border-radius: 4px;">
+                            </div>
+                            <span class="small fw-semibold text-muted">Available</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- Details Column (1/4 size) -->
+        <div class="col-lg-3">
+            <div class="card calendar-card h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                    <h5 class="fw-bold mb-1">Details</h5>
+                    <p id="selectedDateDisplay" class="text-muted extra-small">Select a date</p>
+                </div>
+                <div class="card-body p-3" id="sideDetailView">
+                    <div id="emptyDetailMessage" class="text-center py-5 mt-4">
+                        <div class="text-primary opacity-25 mb-3">
+                            <i class="bi bi-cursor-fill fs-1"></i>
+                        </div>
+                        <p class="text-muted small">Select a date on the left to see bookings.</p>
+                    </div>
+                    <div id="bookingDetailsContainer" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Storage -->
+    <div id="bookingDataStorage" style="display:none;" th:if="${calendar != null}">
+        <div th:each="entry : ${calendar.bookingsByDay}">
+            <div th:id="'bookings-day-' + ${entry.key}">
+                <div th:each="booking : ${entry.value}" class="booking-item-data"
+                     th:data-title="${booking.event.title}" th:data-venue="${booking.venue.name}"
+                     th:data-time="${#temporals.format(booking.startTime, 'HH:mm') + ' - ' + #temporals.format(booking.endTime, 'HH:mm')}"
+                     th:data-society="${booking.society.name}" th:data-status="${booking.status}"
+                     th:data-note="${booking.adminNote}"></div>
+            </div>
+        </div>
+    </div>
 
         <!-- ADMIN: pending venue booking requests -->
         <div sec:authorize="hasRole('ADMIN')">
@@ -206,6 +415,55 @@
     </div>
 
 
+    <script>
+        function showServerBookingDetails(day) {
+            const yearSelect = document.getElementById('yearSelect');
+            const monthSelect = document.getElementById('monthSelect');
+            const year = yearSelect ? yearSelect.value : new Date().getFullYear();
+            const month = monthSelect ? monthSelect.value : new Date().getMonth() + 1;
+
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            document.getElementById('selectedDateDisplay').textContent = `${monthNames[month - 1]} ${day}, ${year}`;
+
+            const container = document.getElementById('bookingDetailsContainer');
+            const emptyMsg = document.getElementById('emptyDetailMessage');
+            container.innerHTML = '';
+
+            const data = document.getElementById('bookings-day-' + day);
+            if (data) {
+                data.querySelectorAll('.booking-item-data').forEach(item => {
+                    const title = item.getAttribute('data-title');
+                    const venue = item.getAttribute('data-venue');
+                    const time = item.getAttribute('data-time');
+                    const society = item.getAttribute('data-society');
+                    const status = item.getAttribute('data-status');
+                    const note = item.getAttribute('data-note');
+
+                    const div = document.createElement('div');
+                    div.className = 'booking-item';
+                    div.innerHTML = `
+                <div class="mb-3">
+                    <span class="badge-venue mb-2 d-inline-block">${venue}</span>
+                    <h6 class="fw-bold mb-1">${title}</h6>
+                    <div class="extra-small text-muted mb-2">
+                        <i class="bi bi-clock me-1"></i> ${time}
+                    </div>
+                    <div class="extra-small text-muted mb-1">
+                        <strong>Society:</strong> ${society}
+                    </div>
+                    ${(note && note !== 'null' && note !== '') ? `<div class="mt-2 pt-2 border-top extra-small text-muted fst-italic">"${note}"</div>` : ''}
+                </div>
+            `;
+                    container.appendChild(div);
+                });
+                emptyMsg.style.display = 'none';
+                container.style.display = 'block';
+            } else {
+                emptyMsg.style.display = 'block';
+                container.style.display = 'none';
+            }
+        }
+    </script>
     <script th:inline="javascript">
         const successMessage = /*[[${success}]]*/ null;
         const errorMessage = /*[[${error}]]*/ null;
