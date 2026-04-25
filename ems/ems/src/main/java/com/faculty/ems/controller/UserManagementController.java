@@ -69,9 +69,10 @@ public class UserManagementController {
     }
 
     @GetMapping("/society-admin-request")
-    @PreAuthorize("hasRole('MEMBER')")
+    @PreAuthorize("hasAnyRole('MEMBER','SOCIETY_ADMIN')")
     public String showSocietyAdminRequestPage(Model model, Authentication auth) {
         model.addAttribute("request", new SocietyAdminRequestDto());
+        model.addAttribute("societies", societyAdminRequestService.getAllSocieties());
         User currentUser = userService.findUserByUsername(auth.getName());
         var existingRequest = societyAdminRequestService.getUserRequests(currentUser.getId());
         model.addAttribute("userRequests", existingRequest);
@@ -79,12 +80,16 @@ public class UserManagementController {
     }
 
     @PostMapping("/society-admin-request")
-    @PreAuthorize("hasRole('MEMBER')")
+    @PreAuthorize("hasAnyRole('MEMBER','SOCIETY_ADMIN')")
     public String saveSocietyAdminRequest(@Valid @ModelAttribute("request") SocietyAdminRequestDto dto,
                                          BindingResult result,
                                          Authentication auth,
+                                         Model model,
                                          RedirectAttributes ra) {
         if (result.hasErrors()) {
+            model.addAttribute("societies", societyAdminRequestService.getAllSocieties());
+            User currentUser = userService.findUserByUsername(auth.getName());
+            model.addAttribute("userRequests", societyAdminRequestService.getUserRequests(currentUser.getId()));
             return "user/society_admin_requests";
         }
 

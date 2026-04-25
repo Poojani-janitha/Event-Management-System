@@ -10,8 +10,7 @@
     <div class="container">
         <div class="row mb-4">
             <div class="col-md-8">
-                <h3 class="fw-bold">Request to Create a Society</h3>
-                <p class="text-muted">Submit your society details for admin review and approval</p>
+                <h3 class="fw-bold">Request to Applying for Society Admin</h3>
             </div>
         </div>
 
@@ -35,14 +34,18 @@
                     <div class="card-body p-4">
                         <form th:action="@{/users/society-admin-request}" th:object="${request}" method="post">
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Society Name <span class="text-danger">*</span></label>
-                                <input type="text" th:field="*{societyName}" class="form-control" 
-                                       placeholder="e.g., IEEE Student Branch" required>
-                                <small th:if="${#fields.hasErrors('societyName')}" th:errors="*{societyName}" 
+                                <label class="form-label fw-bold">Select Existing Society <span class="text-danger">*</span></label>
+                                <select th:field="*{selectedSocietyId}" class="form-select" required>
+                                    <option value="">-- Select Society --</option>
+                                    <option th:each="society : ${societies}"
+                                            th:value="${society.id}"
+                                            th:text="${society.name}"></option>
+                                </select>
+                                <small th:if="${#fields.hasErrors('selectedSocietyId')}" th:errors="*{selectedSocietyId}" 
                                        class="text-danger d-block mt-1"></small>
                             </div>
 
-                            <div class="mb-3">
+                            <!-- <div class="mb-3">
                                 <label class="form-label fw-bold">Contact Email <span class="text-danger">*</span></label>
                                 <input type="email" th:field="*{contactEmail}" class="form-control" 
                                        placeholder="e.g., society@faculty.edu" required>
@@ -57,7 +60,7 @@
                                 <small class="text-muted d-block mt-1">10-500 characters</small>
                                 <small th:if="${#fields.hasErrors('description')}" th:errors="*{description}" 
                                        class="text-danger d-block mt-1"></small>
-                            </div>
+                            </div> -->
 
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary btn-lg fw-bold">
@@ -111,10 +114,10 @@
                     <i class="bi bi-info-circle me-2"></i>
                     <strong>What happens next?</strong>
                     <ul class="mb-0 mt-2">
-                        <li>Your request will be reviewed by the system administrator</li>
-                        <li>Once approved, your society will be created with "Inactive" status</li>
-                        <li>You can then activate your society and start adding members</li>
-                        <li>You'll receive a notification once your request is reviewed</li>
+                        <li>Your request will be reviewed by the admin.</li>
+                        <li>Once approved, you will be assigned as admin of the selected society.</li>
+                        <li>Your role will be updated to SOCIETY_ADMIN.</li>
+                        
                     </ul>
                 </div>
             </div>

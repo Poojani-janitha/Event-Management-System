@@ -34,7 +34,7 @@
         <i class="bi bi-calendar-event me-2"></i> Events
       </a>
       <a th:href="@{/bookings/new}" class="list-group-item list-group-item-action border-0 py-3 rounded"
-         sec:authorize="hasAnyRole('ADMIN', 'SOCIETY_ADMIN')">
+        sec:authorize="hasRole('SOCIETY_ADMIN')">
         <i class="bi bi-plus-circle me-2"></i> Book Venue
       </a>
       <a th:href="@{/users}" class="list-group-item list-group-item-action border-0 py-3 rounded"
@@ -42,8 +42,8 @@
         <i class="bi bi-people me-2"></i> User Management
       </a>
 
-      <a th:href="@{/society-admin-request}" class="list-group-item list-group-item-action border-0 py-3 rounded"
-         sec:authorize="hasRole('MEMBER','ADMIN')">
+      <a th:href="@{/users/society-admin-request}" class="list-group-item list-group-item-action border-0 py-3 rounded"
+        sec:authorize="hasAnyRole('MEMBER','SOCIETY_ADMIN')">
         <i class="bi bi-people me-2"></i> Admin Request
       </a>
     </div>

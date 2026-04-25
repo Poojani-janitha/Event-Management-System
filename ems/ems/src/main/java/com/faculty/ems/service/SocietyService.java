@@ -20,7 +20,16 @@ public class SocietyService {
         return societyRepo.findAll();
     }
 
+    public List<Society> getSocietiesByAdminId(Integer adminId) {
+        return societyRepo.findAllBySocietyAdminId(adminId);
+    }
+
     public Society saveSociety(Society society) {
+        if (society.getSocietyAdmin() == null) {
+            throw new IllegalArgumentException("Society admin is required");
+        }
+
+        society.setActive(true);
         Society savedSociety = societyRepo.save(society);
         // Add the society admin as a member with ADMIN role
         if (savedSociety.getSocietyAdmin() != null) {

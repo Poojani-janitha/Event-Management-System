@@ -6,6 +6,8 @@ import com.faculty.ems.model.User;
 import com.faculty.ems.service.SocietyService;
 import com.faculty.ems.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -22,8 +24,16 @@ public class SocietyController {
     private UserService userService;
 
     @GetMapping
-    public String listSocieties(Model model) {
-        model.addAttribute("societies", societyService.getAllSocieties());
+    public String listSocieties(Model model, Authentication authentication) {
+        boolean isSocietyAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_SOCIETY_ADMIN".equals(a.getAuthority()));
+
+        if (isSocietyAdmin) {
+            User currentUser = userService.findUserByUsername(authentication.getName());
+            model.addAttribute("societies", societyService.getSocietiesByAdminId(currentUser.getId()));
+        } else {
+            model.addAttribute("societies", societyService.getAllSocieties());
+        }
         return "societies/list";
     }
 
@@ -39,14 +49,17 @@ public class SocietyController {
     }
 
     @GetMapping("/new")
+    @PreAuthorize("hasRole('ADMIN')")
     public String showCreateForm(Model model) {
         model.addAttribute("society", new Society());
-        model.addAttribute("users", userService.findAllUsers());
         return "societies/form";
     }
 
     @PostMapping("/save")
-    public String saveSociety(@ModelAttribute("society") Society society) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public String saveSociety(@ModelAttribute("society") Society society, Authentication authentication) {
+        User currentUser = userService.findUserByUsername(authentication.getName());
+        society.setSocietyAdmin(currentUser);
         societyService.saveSociety(society);
         return "redirect:/societies";
     }

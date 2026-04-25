@@ -10,64 +10,194 @@
   <div class="container mt-4" style="max-width:600px">
     <h2>Request Venue Booking</h2>
 
-   
     <div th:if="${error}" class="alert alert-danger">
       <strong>Booking Conflict:</strong>
       <span th:text="${error}"></span>
     </div>
 
-    <form th:action="@{/bookings/new}" method="post">
+    <form th:action="@{/bookings/new}" method="post" th:object="${booking}">
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <input type="hidden" name="eventLocked" th:value="${eventLocked}"/>
 
      
       <div class="mb-3">
         <label class="form-label">Event</label>
-        <select name="eventId" class="form-select" required>
+        <input th:if="${eventLocked}" type="text" class="form-control" th:value="${selectedEventTitle}" readonly/>
+        <input th:if="${eventLocked}" type="hidden" th:field="*{eventId}"/>
+        <select th:unless="${eventLocked}" class="form-select" th:field="*{eventId}" required>
           <option value="">— Select Event —</option>
           <option th:each="e : ${events}"
                   th:value="${e.id}"
-                  th:text="${e.title}"
-                  th:selected="${e.id == selectedEventId}">
+                  th:text="${e.title}">
           </option>
         </select>
+        <small class="text-danger d-block mt-1"
+               th:if="${#fields.hasErrors('eventId')}"
+               th:errors="*{eventId}"></small>
       </div>
 
      
       <div class="mb-3">
         <label class="form-label">Venue</label>
-        <select name="venueId" class="form-select" required>
-          <option value="">— Select Venue —</option>
-          <option th:each="v : ${venues}"
-                  th:value="${v.id}"
-                  th:text="${v.name + ' (capacity: ' + v.capacity + ')'}">
-          </option>
-        </select>
+        <input type="hidden" th:field="*{venueId}" id="venueIdInput"/>
+        <button type="button"
+                class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between align-items-center"
+                id="venueDropdownToggle">
+          <span id="selectedVenueLabel">— Select Venue —</span>
+          <span>▼</span>
+        </button>
+        <div class="border rounded mt-2 d-none" id="venueDropdownList" style="max-height:220px; overflow:auto;">
+          <div class="d-flex justify-content-between align-items-center p-2 border-bottom"
+               th:each="v : ${venues}"
+               th:attr="data-id=${v.id}, data-name=${v.name + ' (capacity: ' + v.capacity + ')'}">
+            <span th:text="${v.name + ' (capacity: ' + v.capacity + ')'}"></span>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-primary venue-select-btn"
+                      th:attr="data-id=${v.id}, data-name=${v.name + ' (capacity: ' + v.capacity + ')'}">
+                Select
+              </button>
+              <button type="button"
+                      class="btn btn-sm btn-outline-primary venue-details-btn"
+                      th:attr="data-id=${v.id},
+                               data-name=${v.name},
+                               data-location=${v.location},
+                               data-capacity=${v.capacity},
+                               data-projector=${v.hasProjector},
+                               data-ac=${v.hasAc},
+                               data-sound=${v.hasSound},
+                               data-description=${v.description}">
+                View Details
+              </button>
+            </div>
+          </div>
+        </div>
+        <small class="text-danger d-block mt-1"
+               th:if="${#fields.hasErrors('venueId')}"
+               th:errors="*{venueId}"></small>
+      </div>
+
+      <div class="card mb-3 d-none" id="venueDetailsCard">
+        <div class="card-body">
+          <h5 class="card-title mb-3" id="venueDetailsName">Venue Details</h5>
+          <p class="mb-1"><strong>Location:</strong> <span id="venueDetailsLocation">-</span></p>
+          <p class="mb-1"><strong>Capacity:</strong> <span id="venueDetailsCapacity">-</span></p>
+          <p class="mb-1"><strong>Projector:</strong> <span id="venueDetailsProjector">-</span></p>
+          <p class="mb-1"><strong>AC:</strong> <span id="venueDetailsAc">-</span></p>
+          <p class="mb-1"><strong>Sound System:</strong> <span id="venueDetailsSound">-</span></p>
+          <p class="mb-0"><strong>Description:</strong> <span id="venueDetailsDescription">-</span></p>
+        </div>
       </div>
 
      
       <div class="mb-3">
         <label class="form-label">Booking Date</label>
-        <input type="date" name="bookingDate" class="form-control"
-               th:value="${booking.bookingDate}" required/>
+        <input type="date" class="form-control"
+               th:field="*{bookingDate}" required/>
+        <small class="text-danger d-block mt-1"
+               th:if="${#fields.hasErrors('bookingDate')}"
+               th:errors="*{bookingDate}"></small>
       </div>
 
     
       <div class="row mb-3">
         <div class="col">
           <label class="form-label">Start Time</label>
-          <input type="time" name="startTime" class="form-control"
-                 th:value="${booking.startTime}" required/>
+          <input type="time" class="form-control"
+                 th:field="*{startTime}" required/>
+          <small class="text-danger d-block mt-1"
+                 th:if="${#fields.hasErrors('startTime')}"
+                 th:errors="*{startTime}"></small>
         </div>
         <div class="col">
           <label class="form-label">End Time</label>
-          <input type="time" name="endTime" class="form-control"
-                 th:value="${booking.endTime}" required/>
+          <input type="time" class="form-control"
+                 th:field="*{endTime}" required/>
+          <small class="text-danger d-block mt-1"
+                 th:if="${#fields.hasErrors('endTime')}"
+                 th:errors="*{endTime}"></small>
         </div>
+      </div>
+
+      <div class="mb-3">
+        <small class="text-danger d-block"
+               th:if="${#fields.hasErrors('timeRangeValid')}"
+               th:errors="*{timeRangeValid}"></small>
       </div>
 
       <button type="submit" class="btn btn-primary w-100">Submit Booking Request</button>
       <a th:href="@{/bookings/my}" class="btn btn-secondary w-100 mt-2">Cancel</a>
     </form>
+  <script>
+    (function () {
+      const venueIdInput = document.getElementById("venueIdInput");
+      const venueDropdownToggle = document.getElementById("venueDropdownToggle");
+      const venueDropdownList = document.getElementById("venueDropdownList");
+      const selectedVenueLabel = document.getElementById("selectedVenueLabel");
+      const selectButtons = document.querySelectorAll(".venue-select-btn");
+      const detailsButtons = document.querySelectorAll(".venue-details-btn");
+      const detailsCard = document.getElementById("venueDetailsCard");
+      const detailsName = document.getElementById("venueDetailsName");
+      const detailsLocation = document.getElementById("venueDetailsLocation");
+      const detailsCapacity = document.getElementById("venueDetailsCapacity");
+      const detailsProjector = document.getElementById("venueDetailsProjector");
+      const detailsAc = document.getElementById("venueDetailsAc");
+      const detailsSound = document.getElementById("venueDetailsSound");
+      const detailsDescription = document.getElementById("venueDetailsDescription");
+
+      function toYesNo(value) {
+        return String(value).toLowerCase() === "true" ? "Yes" : "No";
+      }
+
+      function showVenueDetails(detailsSource) {
+        detailsName.textContent = detailsSource.dataset.name || "Venue Details";
+        detailsLocation.textContent = detailsSource.dataset.location || "-";
+        detailsCapacity.textContent = detailsSource.dataset.capacity || "-";
+        detailsProjector.textContent = toYesNo(detailsSource.dataset.projector);
+        detailsAc.textContent = toYesNo(detailsSource.dataset.ac);
+        detailsSound.textContent = toYesNo(detailsSource.dataset.sound);
+        detailsDescription.textContent = detailsSource.dataset.description || "No description provided.";
+        detailsCard.classList.remove("d-none");
+      }
+
+      function selectVenue(venueId, venueName) {
+        venueIdInput.value = venueId || "";
+        selectedVenueLabel.textContent = venueName || "— Select Venue —";
+      }
+
+      venueDropdownToggle.addEventListener("click", function () {
+        venueDropdownList.classList.toggle("d-none");
+      });
+
+      selectButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          selectVenue(button.dataset.id, button.dataset.name);
+          venueDropdownList.classList.add("d-none");
+        });
+      });
+
+      detailsButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          const row = button.closest("[data-id][data-name]");
+          const venueName = row ? row.dataset.name : button.dataset.name;
+          selectVenue(button.dataset.id || "", venueName || "");
+          showVenueDetails(button);
+        });
+      });
+
+      if (venueIdInput.value) {
+        const selectedRow = venueDropdownList.querySelector('[data-id="' + venueIdInput.value + '"]');
+        if (selectedRow) {
+          selectedVenueLabel.textContent = selectedRow.dataset.name;
+        }
+      }
+
+      document.addEventListener("click", function (event) {
+        if (!venueDropdownToggle.contains(event.target) && !venueDropdownList.contains(event.target)) {
+          venueDropdownList.classList.add("d-none");
+        }
+      });
+    })();
+  </script>
   </div>
   </section>
 </body>

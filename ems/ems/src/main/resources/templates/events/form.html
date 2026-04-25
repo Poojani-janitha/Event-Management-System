@@ -58,6 +58,9 @@
                        th:field="*{title}"
                        placeholder="e.g. Arduino Bootcamp 2025"
                        required/>
+                      <small class="text-danger d-block mt-1"
+                        th:if="${#fields.hasErrors('title')}"
+                        th:errors="*{title}"></small>
               </div>
 
               
@@ -82,19 +85,38 @@
                           th:text="${type}">
                   </option>
                 </select>
+                <small class="text-danger d-block mt-1"
+                       th:if="${#fields.hasErrors('eventType')}"
+                       th:errors="*{eventType}"></small>
               </div>
 
               <div class="mb-3">
                 <label for="society" class="form-label fw-semibold">
                   Society <span class="text-danger">*</span>
                 </label>
-                <select id="society" class="form-select" th:field="*{society.id}" required>
+                <div th:if="${selectedSocietyId != null}">
+                    <input type="hidden" name="selectedSocietyId" th:value="${selectedSocietyId}"/>
+                  <input type="hidden" th:field="*{society.id}"/>
+                  <input type="text"
+                         class="form-control"
+                      th:value="${selectedSocietyName != null ? selectedSocietyName : (event.society != null ? event.society.name : '')}"
+                         readonly/>
+                  <small class="text-muted d-block mt-1">Society is locked because you created this event from a selected society filter.</small>
+                    <small class="text-danger d-block mt-1"
+                      th:if="${#fields.hasErrors('society')}"
+                      th:errors="*{society}"></small>
+                </div>
+                <select id="society" class="form-select" th:field="*{society.id}" required
+                        th:unless="${selectedSocietyId != null}">
                   <option value="">— Select Society —</option>
                   <option th:each="s : ${societies}"
                           th:value="${s.id}"
                           th:text="${s.name}">
                   </option>
                 </select>
+                  <small class="text-danger d-block mt-1"
+                    th:if="${#fields.hasErrors('society')}"
+                    th:errors="*{society}"></small>
               </div>
 
              
@@ -106,6 +128,9 @@
                        th:field="*{expectedAttendees}"
                        min="1"
                        placeholder="e.g. 50"/>
+                  <small class="text-danger d-block mt-1"
+                    th:if="${#fields.hasErrors('expectedAttendees')}"
+                    th:errors="*{expectedAttendees}"></small>
               </div>
 
               
@@ -117,6 +142,9 @@
                   <option value="DRAFT">DRAFT — not visible publicly</option>
                   <option value="PUBLISHED">PUBLISHED — visible to all</option>
                 </select>
+                <small class="text-danger d-block mt-1"
+                       th:if="${#fields.hasErrors('status')}"
+                       th:errors="*{status}"></small>
               </div>
 
             

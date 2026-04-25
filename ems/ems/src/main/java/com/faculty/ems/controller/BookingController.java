@@ -1,6 +1,7 @@
 package com.faculty.ems.controller;
 
 //import com.faculty.ems.exception.BookingConflictException;
+import com.faculty.ems.dto.VenueBookingFormDto;
 import com.faculty.ems.exception.BookingConflictException;
 import com.faculty.ems.model.VenueBooking;
 import com.faculty.ems.model.User;
@@ -11,15 +12,22 @@ import com.faculty.ems.repository.SocietyRepository;
 import com.faculty.ems.service.EventService;
 import com.faculty.ems.service.VenueBookingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
+
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('SOCIETY_ADMIN')")
 public class BookingController {
 
     private final VenueBookingService bookingService;
@@ -33,36 +41,58 @@ public class BookingController {
     public String showForm(@RequestParam(required = false) Long eventId,
                            Model model,
                            @AuthenticationPrincipal UserDetails currentUser) {
-        populateBookingFormModel(model, new VenueBooking(), eventId);
+        User user = userRepo.findByUsername(currentUser.getUsername()).orElseThrow();
+        List<Long> allowedSocietyIds = getAllowedSocietyIds(user);
+        List<com.faculty.ems.model.Event> allowedEvents = eventService.findBySocietyIds(allowedSocietyIds);
+
+        if (eventId != null && allowedEvents.stream().noneMatch(e -> e.getId().equals(eventId))) {
+            throw new AccessDeniedException("You cannot book venue for this event");
+        }
+
+        VenueBookingFormDto bookingForm = new VenueBookingFormDto();
+        bookingForm.setEventId(eventId);
+        boolean lockEventSelection = eventId != null;
+        populateBookingFormModel(model, bookingForm, allowedEvents, lockEventSelection);
         return "bookings/form";
     }
 
     @PostMapping("/bookings/new")
-    public String submitBooking(@ModelAttribute VenueBooking booking,
-                                @RequestParam Long venueId,
-                                @RequestParam Long eventId,
+    public String submitBooking(@Valid @ModelAttribute("booking") VenueBookingFormDto bookingForm,
+                                BindingResult result,
+                                @RequestParam(name = "eventLocked", defaultValue = "false") boolean eventLocked,
                                 @AuthenticationPrincipal UserDetails currentUser,
                                 Model model,
                                 RedirectAttributes ra) {
         User user = userRepo.findByUsername(currentUser.getUsername()).orElseThrow();
-        Society society = societyRepo.findBySocietyAdminId(user.getId()).orElse(null);
-        if (society == null) {
-            populateBookingFormModel(model, booking, eventId);
-            model.addAttribute("error", "Your account is not linked to any society. Please contact admin.");
+
+        List<Long> allowedSocietyIds = getAllowedSocietyIds(user);
+        List<com.faculty.ems.model.Event> allowedEvents = eventService.findBySocietyIds(allowedSocietyIds);
+
+        if (result.hasErrors()) {
+            populateBookingFormModel(model, bookingForm, allowedEvents, eventLocked);
             return "bookings/form";
         }
 
-        booking.setVenue(venueRepo.findById(venueId).orElseThrow());
-        booking.setEvent(eventService.findById(eventId));
-        booking.setSociety(society);
+        com.faculty.ems.model.Event selectedEvent = eventService.findById(bookingForm.getEventId());
+        if (allowedEvents.stream().noneMatch(e -> e.getId().equals(selectedEvent.getId()))) {
+            throw new AccessDeniedException("You cannot book venue for this event");
+        }
+
+        VenueBooking booking = new VenueBooking();
+        booking.setVenue(venueRepo.findById(bookingForm.getVenueId()).orElseThrow());
+        booking.setEvent(selectedEvent);
+        booking.setSociety(selectedEvent.getSociety());
         booking.setRequestedBy(user);
+        booking.setBookingDate(bookingForm.getBookingDate());
+        booking.setStartTime(bookingForm.getStartTime());
+        booking.setEndTime(bookingForm.getEndTime());
 
         try {
             bookingService.requestBooking(booking);
             ra.addFlashAttribute("success", "Booking request submitted! Awaiting admin approval.");
             return "redirect:/bookings/my";
         } catch (BookingConflictException e) {
-            populateBookingFormModel(model, booking, eventId);
+            populateBookingFormModel(model, bookingForm, allowedEvents, eventLocked);
             model.addAttribute("error", e.getMessage());
             return "bookings/form";
         }
@@ -85,13 +115,26 @@ public class BookingController {
         return "bookings/list";
     }
 
-    private void populateBookingFormModel(Model model, VenueBooking booking, Long selectedEventId) {
+    private void populateBookingFormModel(Model model,
+                                          VenueBookingFormDto booking,
+                                          List<com.faculty.ems.model.Event> events,
+                                          boolean lockEventSelection) {
         model.addAttribute("booking", booking);
         model.addAttribute("venues", venueRepo.findByActiveTrue());
-        model.addAttribute("events", eventService.findAll());
-        if (selectedEventId != null) {
-            model.addAttribute("selectedEventId", selectedEventId);
-        }
+        model.addAttribute("events", events);
+        model.addAttribute("eventLocked", lockEventSelection);
+
+        String selectedEventTitle = events.stream()
+                .filter(e -> booking.getEventId() != null && e.getId().equals(booking.getEventId()))
+                .map(com.faculty.ems.model.Event::getTitle)
+                .findFirst()
+                .orElse("");
+        model.addAttribute("selectedEventTitle", selectedEventTitle);
+    }
+
+    private List<Long> getAllowedSocietyIds(User user) {
+        List<Society> adminSocieties = societyRepo.findAllBySocietyAdminId(user.getId());
+        return adminSocieties.stream().map(s -> s.getId().longValue()).toList();
     }
 
 

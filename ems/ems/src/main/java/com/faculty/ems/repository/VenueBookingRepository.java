@@ -29,6 +29,8 @@ public interface VenueBookingRepository extends JpaRepository<VenueBooking, Long
     
     List<VenueBooking> findBySocietyIdOrderByBookingDateDesc(Long societyId);
 
+        List<VenueBooking> findByEventIdOrderByBookingDateDesc(Long eventId);
+
 
     @Query("""
         SELECT b FROM VenueBooking b

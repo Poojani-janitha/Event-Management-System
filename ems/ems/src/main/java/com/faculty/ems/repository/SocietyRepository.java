@@ -12,4 +12,5 @@ public interface SocietyRepository extends JpaRepository<Society, Integer> {
     // Find all active societies for the list view
     List<Society> findByActiveTrue();
     Optional<Society> findBySocietyAdminId(Integer adminId);
+    List<Society> findAllBySocietyAdminId(Integer adminId);
 }

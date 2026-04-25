@@ -1,8 +1,10 @@
 package com.faculty.ems.controller;
 
+import com.faculty.ems.model.SocietyAdminRequest;
 import com.faculty.ems.model.User;
 import com.faculty.ems.repository.UserRepository;
 import com.faculty.ems.service.DashboardService;
+import com.faculty.ems.service.SocietyAdminRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -18,6 +20,9 @@ public class DashboardController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private SocietyAdminRequestService  societyAdminRequestService;
+
     @GetMapping("/dashboard")
     public String showDashboard(Authentication auth, Model model) {
         model.addAttribute("username", auth.getName());
@@ -26,6 +31,7 @@ public class DashboardController {
 
         if ("ROLE_ADMIN".equals(role)) {
             model.addAttribute("pendingBookings", dashboardService.getPendingBookings());
+            model.addAttribute("pendingSocietyRequest", societyAdminRequestService.getPendingRequests());
 
         } else if ("ROLE_SOCIETY_ADMIN".equals(role)) {
             User user = userRepository.findByUsername(auth.getName()).orElseThrow();
@@ -38,4 +44,5 @@ public class DashboardController {
 
         return "dashboard/dashboard";
     }
+
 }

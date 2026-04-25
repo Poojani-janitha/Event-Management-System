@@ -27,12 +27,16 @@
                         <textarea th:field="*{description}" class="form-control" rows="4" placeholder="Describe the society..."></textarea>
                     </div>
                     
-                    <div class="mb-4">
+                    <div class="mb-4" th:if="${society.id != null}">
                         <label class="form-label fw-bold">Assign Administrator</label>
                         <select th:field="*{societyAdmin}" class="form-select">
                             <option value="">-- Select Admin --</option>
                             <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.fullName}"></option>
                         </select>
+                    </div>
+
+                    <div class="alert alert-info" th:if="${society.id == null}">
+                        Society administrator will be assigned automatically to the logged-in admin user.
                     </div>
                     
                     <div class="d-grid gap-2">

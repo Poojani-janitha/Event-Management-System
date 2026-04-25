@@ -11,10 +11,14 @@ import java.util.Optional;
 public interface SocietyAdminRequestRepository extends JpaRepository<SocietyAdminRequest, Integer> {
     
     List<SocietyAdminRequest> findByStatus(SocietyAdminRequest.RequestStatus status);
+
+    List<SocietyAdminRequest> findByStatusOrderByCreatedAtDesc(SocietyAdminRequest.RequestStatus status);
     
     List<SocietyAdminRequest> findByUserId(Integer userId);
     
     Optional<SocietyAdminRequest> findByUserIdAndStatus(Integer userId, SocietyAdminRequest.RequestStatus status);
     
     List<SocietyAdminRequest> findAllByOrderByCreatedAtDesc();
+
+
 }

@@ -23,6 +23,13 @@ public class EventService {
         return eventRepo.findBySocietyId(societyId);
     }
 
+    public List<Event> findBySocietyIds(List<Long> societyIds) {
+        if (societyIds == null || societyIds.isEmpty()) {
+            return List.of();
+        }
+        return eventRepo.findBySocietyIdIn(societyIds);
+    }
+
     public Event findById(Long id) {
         return eventRepo.findById(id)
             .orElseThrow(() -> new RuntimeException("Event not found: " + id));
@@ -45,9 +52,8 @@ public class EventService {
     
     public void deleteIfNoApprovedBooking(Long eventId) {
         List<VenueBooking> approved = bookingRepo
-            .findBySocietyIdOrderByBookingDateDesc(eventId) 
+            .findByEventIdOrderByBookingDateDesc(eventId)
             .stream()
-            .filter(b -> b.getEvent().getId().equals(eventId))
             .filter(b -> b.getStatus() == VenueBooking.BookingStatus.APPROVED)
             .toList();
 

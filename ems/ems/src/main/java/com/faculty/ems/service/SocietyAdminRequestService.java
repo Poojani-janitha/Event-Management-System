@@ -1,6 +1,7 @@
 package com.faculty.ems.service;
 
 import com.faculty.ems.dto.SocietyAdminRequestDto;
+import com.faculty.ems.model.Role;
 import com.faculty.ems.model.Society;
 import com.faculty.ems.model.SocietyAdminRequest;
 import com.faculty.ems.model.User;
@@ -32,18 +33,89 @@ public class SocietyAdminRequestService {
             throw new IllegalArgumentException("You already have a pending society admin request");
         }
 
+        Society society = societyRepository.findById(dto.getSelectedSocietyId())
+                .orElseThrow(() -> new EntityNotFoundException("Society not found"));
+
         SocietyAdminRequest request = SocietyAdminRequest.builder()
                 .user(user)
-                .societyName(dto.getSocietyName())
-                .contactEmail(dto.getContactEmail())
-                .description(dto.getDescription())
+                .societyName(society.getName())
+                .contactEmail(society.getContactEmail())
+                .description("Request to become admin of society: " + society.getName())
+                .createdSocietyId(society.getId())
                 .status(SocietyAdminRequest.RequestStatus.PENDING)
                 .build();
 
         return requestRepository.save(request);
     }
 
+    public List<Society> getAllSocieties() {
+        return societyRepository.findAll();
+    }
+
     // Get requests by user
     public List<SocietyAdminRequest> getUserRequests(Integer userId) {
         return requestRepository.findByUserId(userId);
     }
+
+    //to get pending requests for admin dashboard
+    public List<SocietyAdminRequest> getPendingRequests() {
+        return requestRepository.findByStatusOrderByCreatedAtDesc(SocietyAdminRequest.RequestStatus.PENDING);
+    }
+
+    public List<SocietyAdminRequest> getRequestsByOptionalStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return requestRepository.findAllByOrderByCreatedAtDesc();
+        }
+
+        try {
+            SocietyAdminRequest.RequestStatus parsedStatus = SocietyAdminRequest.RequestStatus.valueOf(status.toUpperCase());
+            return requestRepository.findByStatusOrderByCreatedAtDesc(parsedStatus);
+        } catch (IllegalArgumentException ex) {
+            return requestRepository.findAllByOrderByCreatedAtDesc();
+        }
+    }
+
+    public SocietyAdminRequest getRequestById(Integer id) {
+        return requestRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Request not found with id: " + id));
+    }
+
+    public void approveRequest(Integer id) {
+        SocietyAdminRequest request = getRequestById(id);
+
+        if (request.getStatus() != SocietyAdminRequest.RequestStatus.PENDING) {
+            throw new IllegalStateException("Only pending requests can be approved");
+        }
+
+        request.setStatus(SocietyAdminRequest.RequestStatus.APPROVED);
+        request.setReviewedAt(LocalDateTime.now());
+        request.setReviewNotes("Approved by admin and assigned as society admin");
+
+        User user = request.getUser();
+        user.setRole(Role.SOCIETY_ADMIN);
+
+        if (request.getCreatedSocietyId() == null) {
+            throw new IllegalStateException("Requested society is missing");
+        }
+
+        Society society = societyRepository.findById(request.getCreatedSocietyId())
+                .orElseThrow(() -> new EntityNotFoundException("Requested society not found"));
+        society.setSocietyAdmin(user);
+
+        requestRepository.save(request);
+    }
+
+    public void rejectRequest(Integer id, String reason) {
+        SocietyAdminRequest request = getRequestById(id);
+
+        if (request.getStatus() != SocietyAdminRequest.RequestStatus.PENDING) {
+            throw new IllegalStateException("Only pending requests can be rejected");
+        }
+
+        request.setStatus(SocietyAdminRequest.RequestStatus.REJECTED);
+        request.setReviewedAt(LocalDateTime.now());
+        request.setReviewNotes(reason == null || reason.isBlank() ? "Rejected by admin" : reason.trim());
+
+        requestRepository.save(request);
+    }
+}

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
         th:replace="~{fragments/layout :: mainLayout(~{::section})}">
 <head>
     <title>Faculty Societies</title>
@@ -11,7 +12,7 @@
             <h2 class="fw-bold mb-0">Faculty Societies</h2>
             <p class="text-muted mb-0">Discover and join campus societies</p>
         </div>
-        <a th:href="@{/societies/new}" class="btn btn-primary btn-md">
+        <a th:href="@{/societies/new}" class="btn btn-primary btn-md" sec:authorize="hasRole('ADMIN')">
             <i class="bi bi-plus-circle me-2"></i> Create Society
         </a>
     </div>

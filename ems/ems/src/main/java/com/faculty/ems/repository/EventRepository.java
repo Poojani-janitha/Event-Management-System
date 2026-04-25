@@ -8,5 +8,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     List<Event> findBySocietyId(Long societyId);
 
+    List<Event> findBySocietyIdIn(List<Long> societyIds);
+
     List<Event> findBySocietyIdAndStatus(Long societyId, Event.EventStatus status);
 }

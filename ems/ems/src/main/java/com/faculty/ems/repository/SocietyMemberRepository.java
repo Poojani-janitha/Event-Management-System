@@ -16,4 +16,6 @@ public interface SocietyMemberRepository extends JpaRepository<SocietyMember, In
 
     // Find a specific member by society and user ID
     SocietyMember findBySocietyIdAndUserId(Integer societyId, Integer userId);
+
+    List<SocietyMember> findByUserId(Integer userId);
 }
