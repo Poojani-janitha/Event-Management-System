@@ -53,3 +53,7 @@ Spring Boot  •  Thymeleaf  •  MySQL  •  Maven
                 }
             }
         </script>
+
+
+        Test-NetConnection smtp.gmail.com -Port 587
+
