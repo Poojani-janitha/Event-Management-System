@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{fragments/layout :: mainLayout(~{::section})}"
+>
 <head>
+
+
   <title>Events</title>
   <link rel="stylesheet" th:href="@{/css/style.css}"/>
 </head>
 <body>
-  <div th:replace="~{fragments/navbar :: navbar}"></div>
-
+<!--  <div th:replace="~{fragments/navbar :: navbar}"></div>-->
+  <section>
   <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2>Events</h2>
@@ -54,5 +58,6 @@
       </tbody>
     </table>
   </div>
+  </section>
 </body>
 </html>
