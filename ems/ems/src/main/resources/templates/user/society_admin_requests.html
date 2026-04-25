@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: mainLayout(~{::section})}">
+<head>
+    <meta charset="UTF-8">
+    <title>Society Admin Request</title>
+</head>
+<body>
+<section class="py-4">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h3 class="fw-bold">Request to Create a Society</h3>
+                <p class="text-muted">Submit your society details for admin review and approval</p>
+            </div>
+        </div>
+
+        <!-- Alert Messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="row">
+            <!-- Request Form -->
+            <div class="col-lg-6">
+                <div class="card shadow-lg border-0 mb-4">
+                    <div class="card-header bg-primary bg-opacity-10 border-bottom p-4">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-file-earmark-plus text-primary me-2"></i>New Request</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form th:action="@{/users/society-admin-request}" th:object="${request}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Society Name <span class="text-danger">*</span></label>
+                                <input type="text" th:field="*{societyName}" class="form-control" 
+                                       placeholder="e.g., IEEE Student Branch" required>
+                                <small th:if="${#fields.hasErrors('societyName')}" th:errors="*{societyName}" 
+                                       class="text-danger d-block mt-1"></small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Contact Email <span class="text-danger">*</span></label>
+                                <input type="email" th:field="*{contactEmail}" class="form-control" 
+                                       placeholder="e.g., society@faculty.edu" required>
+                                <small th:if="${#fields.hasErrors('contactEmail')}" th:errors="*{contactEmail}" 
+                                       class="text-danger d-block mt-1"></small>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Description <span class="text-danger">*</span></label>
+                                <textarea th:field="*{description}" class="form-control" rows="5" 
+                                          placeholder="Describe your society, its mission, and goals..." required></textarea>
+                                <small class="text-muted d-block mt-1">10-500 characters</small>
+                                <small th:if="${#fields.hasErrors('description')}" th:errors="*{description}" 
+                                       class="text-danger d-block mt-1"></small>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                                    <i class="bi bi-send me-2"></i>Submit Request
+                                </button>
+                                <a href="/dashboard" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Request History -->
+            <div class="col-lg-6">
+                <div class="card shadow-lg border-0">
+                    <div class="card-header bg-info bg-opacity-10 border-bottom p-4">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-clock-history text-info me-2"></i>Your Requests</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div th:if="${#lists.isEmpty(userRequests)}" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            <p>No requests yet</p>
+                        </div>
+                        <div th:each="req : ${userRequests}" class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-bold mb-0" th:text="${req.societyName}">Society Name</h6>
+                                <span th:class="${req.status.name() == 'PENDING'} ? 'badge bg-warning' : 
+                                              (${req.status.name() == 'APPROVED'} ? 'badge bg-success' : 'badge bg-danger')"
+                                      th:text="${req.status.name()}">Status</span>
+                            </div>
+                            <p class="small text-muted mb-1">
+                                <i class="bi bi-envelope me-1"></i> <span th:text="${req.contactEmail}"></span>
+                            </p>
+                            <p class="small text-muted mb-2">
+                                <i class="bi bi-calendar me-1"></i> 
+                                <span th:text="${#temporals.format(req.createdAt, 'dd MMM yyyy HH:mm')}"></span>
+                            </p>
+                            <div th:if="${req.reviewNotes}" class="alert alert-info py-2 small mb-0">
+                                <strong>Admin Notes:</strong> <span th:text="${req.reviewNotes}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>What happens next?</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Your request will be reviewed by the system administrator</li>
+                        <li>Once approved, your society will be created with "Inactive" status</li>
+                        <li>You can then activate your society and start adding members</li>
+                        <li>You'll receive a notification once your request is reviewed</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

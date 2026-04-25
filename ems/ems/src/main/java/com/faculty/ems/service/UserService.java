@@ -47,6 +47,11 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
     }
 
+    public User findUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with username: " + username));
+    }
+
     public void updateUser(UserEditDto dto) {
         User user = findUserById(dto.getId());
         user.setUsername(dto.getUsername());
@@ -54,6 +59,9 @@ public class UserService {
         user.setFullName(dto.getFullName());
         user.setRole(dto.getRole());
         user.setEnabled(dto.isEnabled());
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
         userRepository.save(user);
     }
 

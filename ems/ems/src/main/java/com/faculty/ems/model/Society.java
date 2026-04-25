@@ -1,6 +1,8 @@
 package com.faculty.ems.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -11,6 +13,8 @@ import java.time.LocalDateTime;
 @Table(name = "societies")
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Society {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +35,8 @@ public class Society {
     @JoinColumn(name = "admin_id", nullable = false)
     private User societyAdmin;
 
-    private boolean active = true;
+    @Builder.Default
+    private boolean active = false;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

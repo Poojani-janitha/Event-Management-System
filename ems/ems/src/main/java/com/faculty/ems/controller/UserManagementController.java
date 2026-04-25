@@ -1,11 +1,16 @@
 package com.faculty.ems.controller;
 
+
+import com.faculty.ems.dto.SocietyAdminRequestDto;
 import com.faculty.ems.dto.UserEditDto;
 import com.faculty.ems.model.Role;
 import com.faculty.ems.model.User;
+import com.faculty.ems.service.SocietyAdminRequestService;
 import com.faculty.ems.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,6 +24,9 @@ public class UserManagementController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private SocietyAdminRequestService societyAdminRequestService;
+
     @GetMapping
     public String listUsers(Model model) {
         model.addAttribute("users", userService.findAllUsers());
@@ -30,7 +38,7 @@ public class UserManagementController {
         User user = userService.findUserById(id);
         UserEditDto dto = new UserEditDto(
                 user.getId(), user.getUsername(), user.getEmail(),
-                user.getFullName(), user.getRole(), user.isEnabled()
+                user.getFullName(), null, user.getRole(), user.isEnabled()
         );
         model.addAttribute("user", dto);
         model.addAttribute("roles", Role.values());
@@ -58,5 +66,35 @@ public class UserManagementController {
         userService.deleteUser(id);
         ra.addFlashAttribute("success", "User deleted successfully");
         return "redirect:/users";
+    }
+
+    @GetMapping("/society-admin-request")
+    @PreAuthorize("hasRole('MEMBER')")
+    public String showSocietyAdminRequestPage(Model model, Authentication auth) {
+        model.addAttribute("request", new SocietyAdminRequestDto());
+        User currentUser = userService.findUserByUsername(auth.getName());
+        var existingRequest = societyAdminRequestService.getUserRequests(currentUser.getId());
+        model.addAttribute("userRequests", existingRequest);
+        return "user/society_admin_requests";
+    }
+
+    @PostMapping("/society-admin-request")
+    @PreAuthorize("hasRole('MEMBER')")
+    public String saveSocietyAdminRequest(@Valid @ModelAttribute("request") SocietyAdminRequestDto dto,
+                                         BindingResult result,
+                                         Authentication auth,
+                                         RedirectAttributes ra) {
+        if (result.hasErrors()) {
+            return "user/society_admin_requests";
+        }
+
+        try {
+            User currentUser = userService.findUserByUsername(auth.getName());
+            societyAdminRequestService.submitRequest(currentUser, dto);
+            ra.addFlashAttribute("success", "Society admin request submitted successfully!");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/users/society-admin-request";
     }
 }
