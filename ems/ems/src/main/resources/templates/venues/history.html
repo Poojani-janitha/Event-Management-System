@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: mainLayout(~{::content})}">
+
+<head>
+    <title>Booking History</title>
+</head>
+
+<body>
+    <section th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-0 text-dark">Booking History</h2>
+                <p class="text-muted mb-0">Track and manage all venue bookings across the campus</p>
+            </div>
+            <a th:href="@{/venues}" class="btn btn-outline-primary rounded-pill px-4">
+                <i class="bi bi-calendar-week me-2"></i> View Calendar
+            </a>
+        </div>
+
+        <!-- Summary Statistics Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-2.4 col-lg">
+                <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                    <div class="card-body p-4 text-center">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-list-ul fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0" th:text="${totalCount}">0</h3>
+                        <p class="text-muted small mb-0 fw-semibold">Total Bookings</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2.4 col-lg">
+                <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                    <div class="card-body p-4 text-center">
+                        <div class="bg-success bg-opacity-10 text-success rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-check-circle fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0" th:text="${approvedCount}">0</h3>
+                        <p class="text-muted small mb-0 fw-semibold">Approved</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2.4 col-lg">
+                <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                    <div class="card-body p-4 text-center">
+                        <div class="bg-warning bg-opacity-10 text-warning rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-hourglass-split fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0" th:text="${pendingCount}">0</h3>
+                        <p class="text-muted small mb-0 fw-semibold">Pending</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2.4 col-lg">
+                <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                    <div class="card-body p-4 text-center">
+                        <div class="bg-danger bg-opacity-10 text-danger rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-x-circle fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0" th:text="${rejectedCount}">0</h3>
+                        <p class="text-muted small mb-0 fw-semibold">Rejected</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2.4 col-lg">
+                <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                    <div class="card-body p-4 text-center">
+                        <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-slash-circle fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0" th:text="${cancelledCount}">0</h3>
+                        <p class="text-muted small mb-0 fw-semibold">Cancelled</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Card -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+            <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0">Booking Records</h5>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="small text-muted"><i class="bi bi-lightning-charge-fill text-warning me-1"></i> Live Filters Active</span>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <form th:action="@{/venues/history}" method="get" class="row g-3 mb-4" id="historyFilterForm">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Venue</label>
+                        <select name="venueId" class="form-select rounded-pill border-0 bg-light filter-input">
+                            <option value="">All Venues</option>
+                            <option th:each="v : ${venues}" th:value="${v.id}" th:text="${v.name}" th:selected="${filterCriteria.venueId == v.id}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Society</label>
+                        <select name="societyId" class="form-select rounded-pill border-0 bg-light filter-input">
+                            <option value="">All Societies</option>
+                            <option th:each="s : ${societies}" th:value="${s.id}" th:text="${s.name}" th:selected="${filterCriteria.societyId == s.id}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Status</label>
+                        <select name="status" class="form-select rounded-pill border-0 bg-light filter-input">
+                            <option value="ALL">All Statuses</option>
+                            <option value="PENDING" th:selected="${filterCriteria.status == 'PENDING'}">Pending</option>
+                            <option value="APPROVED" th:selected="${filterCriteria.status == 'APPROVED'}">Approved</option>
+                            <option value="REJECTED" th:selected="${filterCriteria.status == 'REJECTED'}">Rejected</option>
+                            <option value="CANCELLED" th:selected="${filterCriteria.status == 'CANCELLED'}">Cancelled</option>
+                        </select>
+                    </div>
+                </form>
+
+                <div id="bookingTableContainer">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr class="small text-uppercase text-muted">
+                                    <th class="py-3">Date</th>
+                                    <th class="py-3">Event / Society</th>
+                                    <th class="py-3">Venue</th>
+                                    <th class="py-3">Time</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="py-3 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="booking : ${bookings}">
+                                    <td class="py-3">
+                                        <div class="fw-bold" th:text="${#temporals.format(booking.bookingDate, 'MMM dd, yyyy')}"></div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-dark" th:text="${booking.event.title}"></div>
+                                        <div class="extra-small text-muted" th:text="${booking.society.name}"></div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark fw-normal px-3" th:text="${booking.venue.name}"></span>
+                                    </td>
+                                    <td class="small" th:text="${#temporals.format(booking.startTime, 'HH:mm') + ' - ' + #temporals.format(booking.endTime, 'HH:mm')}"></td>
+                                    <td>
+                                        <span th:if="${booking.status.name() == 'APPROVED'}" class="badge bg-success-subtle text-success px-3">Approved</span>
+                                        <span th:if="${booking.status.name() == 'PENDING'}" class="badge bg-warning-subtle text-warning px-3">Pending</span>
+                                        <span th:if="${booking.status.name() == 'REJECTED'}" class="badge bg-danger-subtle text-danger px-3">Rejected</span>
+                                        <span th:if="${booking.status.name() == 'CANCELLED'}" class="badge bg-secondary-subtle text-secondary px-3">Cancelled</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn btn-sm btn-light rounded-pill px-3 shadow-sm">Details</a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(bookings)}">
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox fs-2 d-block mb-3 opacity-25"></i>
+                                        No bookings match the selected filters.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // --- Live Filter Logic ---
+            let filterTimeout;
+            const filterInputs = document.querySelectorAll('.filter-input');
+            const tableContainer = document.getElementById('bookingTableContainer');
+
+            filterInputs.forEach(input => {
+                input.addEventListener('change', applyFilters);
+                if (input.tagName === 'INPUT') {
+                    input.addEventListener('input', () => {
+                        clearTimeout(filterTimeout);
+                        filterTimeout = setTimeout(applyFilters, 300);
+                    });
+                }
+            });
+
+            async function applyFilters() {
+                const form = document.getElementById('historyFilterForm');
+                const formData = new FormData(form);
+                const params = new URLSearchParams(formData);
+
+                // Update browser URL without reloading
+                const url = new URL(window.location.href);
+                params.forEach((value, key) => url.searchParams.set(key, value));
+                window.history.replaceState({}, '', url);
+
+                try {
+                    const response = await fetch(url);
+                    const html = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    const newContent = doc.getElementById('bookingTableContainer').innerHTML;
+                    tableContainer.innerHTML = newContent;
+                } catch (error) {
+                    console.error('Error filtering bookings:', error);
+                }
+            }
+        </script>
+    </section>
+</body>
+</html>

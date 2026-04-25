@@ -19,20 +19,21 @@ public class EventService {
         return eventRepo.findAll();
     }
 
-    public List<Event> findBySociety(Long societyId) {
+    public List<Event> findBySociety(long societyId) {
         return eventRepo.findBySocietyId(societyId);
     }
 
-    public Event findById(Long id) {
+    public Event findById(long id) {
         return eventRepo.findById(id)
             .orElseThrow(() -> new RuntimeException("Event not found: " + id));
     }
 
     public Event save(Event event) {
+        if (event == null) throw new IllegalArgumentException("Event cannot be null");
         return eventRepo.save(event);
     }
 
-    public Event update(Long id, Event updated) {
+    public Event update(long id, Event updated) {
         Event existing = findById(id);
         existing.setTitle(updated.getTitle());
         existing.setDescription(updated.getDescription());
@@ -43,7 +44,7 @@ public class EventService {
     }
 
     
-    public void deleteIfNoApprovedBooking(Long eventId) {
+    public void deleteIfNoApprovedBooking(long eventId) {
         List<VenueBooking> approved = bookingRepo
             .findBySocietyIdOrderByBookingDateDesc(eventId) 
             .stream()

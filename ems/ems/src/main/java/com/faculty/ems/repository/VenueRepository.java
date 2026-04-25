@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface VenueRepository extends JpaRepository<Venue, Long> {
     List<Venue> findByActiveTrue();
+    
+    
 }

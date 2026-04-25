@@ -21,6 +21,7 @@ public class SocietyService {
     }
 
     public Society saveSociety(Society society) {
+        if (society == null) throw new IllegalArgumentException("Society cannot be null");
         Society savedSociety = societyRepo.save(society);
         // Add the society admin as a member with ADMIN role
         if (savedSociety.getSocietyAdmin() != null) {
@@ -30,7 +31,7 @@ public class SocietyService {
     }
 
     //to find single society by id
-    public Society getSocietyById(Integer id) {
+    public Society getSocietyById(int id) {
         return societyRepo.findById(id).orElseThrow(() -> new RuntimeException("Society Not Found"));
     }
 
@@ -80,7 +81,7 @@ public class SocietyService {
     }
 
     // Toggle status (Activate/Deactivate)
-    public void toggleSocietyStatus(Integer id) {
+    public void toggleSocietyStatus(int id) {
         Society society = getSocietyById(id);
         society.setActive(!society.isActive()); // Flips true to false, or false to true
         societyRepo.save(society);
@@ -96,11 +97,11 @@ public class SocietyService {
     }
 
     //Method to get all members belonging to a specific society
-    public List<SocietyMember> getSocietyMembers(Integer societyId) {
+    public List<SocietyMember> getSocietyMembers(int societyId) {
         return memberRepo.findBySocietyId(societyId);
     }
 
-    public void joinSociety(Integer societyId, User user) {
+    public void joinSociety(int societyId, User user) {
         //check if already a member to avoid duplicate errors
         if(!memberRepo.existsBySocietyIdAndUserId(societyId,user.getId())) {
             SocietyMember  member = new SocietyMember();
@@ -111,11 +112,11 @@ public class SocietyService {
         }
     }
 
-    public void removeMember(Integer memberId) {
+    public void removeMember(int memberId) {
         memberRepo.deleteById(memberId);
     }
 
-    public boolean isMemberOfSociety(Integer societyId, Integer userId) {
+    public boolean isMemberOfSociety(int societyId, int userId) {
         return memberRepo.existsBySocietyIdAndUserId(societyId, userId);
     }
 

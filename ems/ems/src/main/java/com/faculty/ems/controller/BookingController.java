@@ -33,14 +33,22 @@ public class BookingController {
     public String showForm(@RequestParam(required = false) Long eventId,
                            Model model,
                            @AuthenticationPrincipal UserDetails currentUser) {
-        populateBookingFormModel(model, new VenueBooking(), eventId);
+        model.addAttribute("booking", new VenueBooking());
+        model.addAttribute("venues", venueRepo.findByActiveTrue());
+        model.addAttribute("events", eventService.findAll());
+
+
+        if (eventId != null) {
+            model.addAttribute("selectedEventId", eventId);
+        }
+        populateBookingFormModel(model, new VenueBooking(), eventId); //sahan
         return "bookings/form";
     }
 
     @PostMapping("/bookings/new")
     public String submitBooking(@ModelAttribute VenueBooking booking,
-                                @RequestParam Long venueId,
-                                @RequestParam Long eventId,
+                                @RequestParam long venueId,
+                                @RequestParam long eventId,
                                 @AuthenticationPrincipal UserDetails currentUser,
                                 Model model,
                                 RedirectAttributes ra) {
