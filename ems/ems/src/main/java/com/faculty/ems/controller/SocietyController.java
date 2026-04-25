@@ -30,7 +30,7 @@ public class SocietyController {
     @GetMapping("/{id}")
     public String viewSociety(@PathVariable Integer id, Model model) {
         Society society = societyService.getSocietyById(id);
-        //to get the member count
+        // to get the member count
         List<SocietyMember> members = societyService.getSocietyMembers(id);
         model.addAttribute("society", society);
         model.addAttribute("memberCount", members.size());
@@ -55,13 +55,13 @@ public class SocietyController {
     public String viewMembers(@PathVariable Integer id, Model model) {
         Society society = societyService.getSocietyById(id);
         List<SocietyMember> members = societyService.getSocietyMembers(id);
-        
+
         // Sort members: admins first, then members
         members.sort((m1, m2) -> {
             if (m1.getRoleInSociety().name().equals("ADMIN") && !m2.getRoleInSociety().name().equals("ADMIN")) {
                 return -1; // m1 comes first
             } else if (!m1.getRoleInSociety().name().equals("ADMIN") && m2.getRoleInSociety().name().equals("ADMIN")) {
-                return 1;  // m2 comes first
+                return 1; // m2 comes first
             }
             return 0; // maintain order
         });
@@ -74,18 +74,21 @@ public class SocietyController {
     }
 
     @PostMapping("/{id}/add-member")
-    public String addMember(@PathVariable Integer id, @RequestParam Integer userId, Model model, org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+    public String addMember(@PathVariable Integer id, @RequestParam Integer userId, Model model,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         User user = userService.findUserById(userId);
         Society society = societyService.getSocietyById(id);
-        
+
         // Check if user is already a member
-        if(societyService.isMemberOfSociety(society.getId(), user.getId())) {
-            redirectAttributes.addFlashAttribute("error", user.getFullName() + " is already registered in " + society.getName());
+        if (societyService.isMemberOfSociety(society.getId(), user.getId())) {
+            redirectAttributes.addFlashAttribute("error",
+                    user.getFullName() + " is already registered in " + society.getName());
         } else {
             societyService.addMemberToSociety(society, user);
-            redirectAttributes.addFlashAttribute("success", user.getFullName() + " has been added to " + society.getName());
+            redirectAttributes.addFlashAttribute("success",
+                    user.getFullName() + " has been added to " + society.getName());
         }
-        
+
         return "redirect:/societies/" + id + "/members";
     }
 

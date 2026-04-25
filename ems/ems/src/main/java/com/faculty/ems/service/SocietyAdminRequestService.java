@@ -27,7 +27,8 @@ public class SocietyAdminRequestService {
     // Submit a new request
     public SocietyAdminRequest submitRequest(User user, SocietyAdminRequestDto dto) {
         // Check if user already has a pending request
-        var existingRequest = requestRepository.findByUserIdAndStatus(user.getId(), SocietyAdminRequest.RequestStatus.PENDING);
+        var existingRequest = requestRepository.findByUserIdAndStatus(user.getId(),
+                SocietyAdminRequest.RequestStatus.PENDING);
         if (existingRequest.isPresent()) {
             throw new IllegalArgumentException("You already have a pending society admin request");
         }
@@ -47,3 +48,4 @@ public class SocietyAdminRequestService {
     public List<SocietyAdminRequest> getUserRequests(Integer userId) {
         return requestRepository.findByUserId(userId);
     }
+}

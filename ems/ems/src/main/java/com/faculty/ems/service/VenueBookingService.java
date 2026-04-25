@@ -61,6 +61,26 @@ public class VenueBookingService {
         if (booking.getStatus() != VenueBooking.BookingStatus.PENDING) {
             throw new RuntimeException("Only pending bookings can be approved.");
         }
+
+        // Conflict check: Ensure no other APPROVED or PENDING booking overlaps
+        List<VenueBooking> conflicts = bookingRepo.findConflictingExcluding(
+                booking.getVenue().getId(),
+                booking.getBookingDate(),
+                booking.getStartTime(),
+                booking.getEndTime(),
+                booking.getId()
+        );
+
+        if (!conflicts.isEmpty()) {
+            VenueBooking clash = conflicts.get(0);
+            throw new BookingConflictException(
+                    "Cannot approve! '" + clash.getVenue().getName() + "' is already booked on " +
+                            clash.getBookingDate() + " from " +
+                            clash.getStartTime() + " to " + clash.getEndTime() +
+                            " (Status: " + clash.getStatus() + ")."
+            );
+        }
+
         booking.setStatus(VenueBooking.BookingStatus.APPROVED);
         booking.setAdminNote(note);
         VenueBooking saved = bookingRepo.save(booking);

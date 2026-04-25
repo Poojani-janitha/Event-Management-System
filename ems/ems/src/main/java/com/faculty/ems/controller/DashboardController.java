@@ -32,7 +32,7 @@ public class DashboardController {
             model.addAttribute("myBookings", dashboardService.getBookingsByUser(user.getId()));
         } else if ("ROLE_MEMBER".equals(role)) {
 
-            model.addAttribute("approvedBookings",dashboardService.getApprovedBookings());
+            model.addAttribute("approvedBookings", dashboardService.getApprovedBookings());
 
         }
 

@@ -3,8 +3,8 @@ package com.faculty.ems.controller;
 import com.faculty.ems.model.Event;
 import com.faculty.ems.model.User;
 import com.faculty.ems.service.EventService;
-import com.faculty.ems.repository.SocietyRepository;   
-import com.faculty.ems.repository.UserRepository;       
+import com.faculty.ems.repository.SocietyRepository;
+import com.faculty.ems.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,15 +24,14 @@ public class EventController {
 
     @GetMapping
     public String list(Model model,
-                       @AuthenticationPrincipal UserDetails currentUser) {
+            @AuthenticationPrincipal UserDetails currentUser) {
         User user = userRepo.findByUsername(currentUser.getUsername()).orElseThrow();
 
-        
         if (currentUser.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
             model.addAttribute("events", eventService.findAll());
         } else {
-            
+
             var society = societyRepo.findBySocietyAdminId(user.getId()).orElseThrow();
             model.addAttribute("events", eventService.findBySociety(society.getId().longValue()));
         }
@@ -41,7 +40,7 @@ public class EventController {
 
     @GetMapping("/new")
     public String createForm(Model model,
-                             @AuthenticationPrincipal UserDetails currentUser) {
+            @AuthenticationPrincipal UserDetails currentUser) {
         model.addAttribute("event", new Event());
         model.addAttribute("eventTypes", Event.EventType.values());
         model.addAttribute("societies", societyRepo.findAll());
@@ -50,8 +49,8 @@ public class EventController {
 
     @PostMapping("/new")
     public String create(@ModelAttribute Event event,
-                         @AuthenticationPrincipal UserDetails currentUser,
-                         RedirectAttributes ra) {
+            @AuthenticationPrincipal UserDetails currentUser,
+            RedirectAttributes ra) {
         User user = userRepo.findByUsername(currentUser.getUsername()).orElseThrow();
         event.setOrganiser(user);
         eventService.save(event);
@@ -75,8 +74,8 @@ public class EventController {
 
     @PostMapping("/{id}/edit")
     public String update(@PathVariable Long id,
-                         @ModelAttribute Event event,
-                         RedirectAttributes ra) {
+            @ModelAttribute Event event,
+            RedirectAttributes ra) {
         eventService.update(id, event);
         ra.addFlashAttribute("success", "Event updated successfully.");
         return "redirect:/events";
