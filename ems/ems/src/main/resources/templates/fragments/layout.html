@@ -198,7 +198,7 @@
         </a>
 
         <a th:href="@{/events}" class="list-group-item list-group-item-action nav-pill"
-          th:classappend="${currentRequestUri.startsWith('/events')} ? ' active' : ''">
+          th:classappend="${currentRequestUri.startsWith('/events')} ? ' active' : ''" sec:authorize="hasAnyRole('ADMIN', 'SOCIETY_ADMIN')">
           <i class="bi bi-calendar-event me-2"></i> Events
         </a>
 

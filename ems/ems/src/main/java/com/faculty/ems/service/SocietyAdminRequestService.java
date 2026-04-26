@@ -28,6 +28,9 @@ public class SocietyAdminRequestService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private SocietyService societyService;
+
     // Submit a new request
     public SocietyAdminRequest submitRequest(User user, SocietyAdminRequestDto dto) {
         Society society = societyRepository.findById(dto.getSelectedSocietyId())
@@ -109,8 +112,7 @@ public class SocietyAdminRequestService {
 
         Society society = societyRepository.findById(request.getCreatedSocietyId())
                 .orElseThrow(() -> new EntityNotFoundException("Requested society not found"));
-        society.setSocietyAdmin(user);
-        societyRepository.save(society);
+        societyService.assignSocietyAdmin(society, user);
 
         requestRepository.save(request);
         emailService.sendSocietyRequestDecisionEmail(request);

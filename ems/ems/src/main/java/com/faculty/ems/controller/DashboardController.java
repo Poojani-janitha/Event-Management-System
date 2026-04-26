@@ -8,6 +8,7 @@ import com.faculty.ems.repository.SocietyRepository;
 import com.faculty.ems.repository.UserRepository;
 import com.faculty.ems.service.CalendarService;
 import com.faculty.ems.service.DashboardService;
+import com.faculty.ems.service.SocietyService;
 import com.faculty.ems.service.SocietyAdminRequestService;
 import com.faculty.ems.service.VenueBookingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,9 @@ public class DashboardController {
 
     @Autowired
     private SocietyAdminRequestService  societyAdminRequestService;
+
+    @Autowired
+    private SocietyService societyService;
 
     @Autowired
     private CalendarService calendarService;
@@ -73,8 +77,15 @@ public class DashboardController {
                 model.addAttribute("myBookings", allBookings);
             }
         } else if ("ROLE_MEMBER".equals(role)) {
+            // member can see all approved bookings and highlight booking relevant to his socities 
+            User user = userRepository.findByUsername(auth.getName()).orElseThrow();
+            List<Integer> joinedSocietyIds = societyService.getSocietiesByMemberId(user.getId())
+                    .stream()
+                    .map(Society::getId)
+                    .toList();
 
             model.addAttribute("approvedBookings", dashboardService.getApprovedBookings());
+            model.addAttribute("joinedSocietyIds", joinedSocietyIds);
 
         }
 

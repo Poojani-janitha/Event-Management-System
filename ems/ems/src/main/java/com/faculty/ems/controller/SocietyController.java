@@ -190,9 +190,13 @@ public class SocietyController {
             redirectAttributes.addFlashAttribute("error",
                     user.getFullName() + " is already registered in " + society.getName());
         } else {
-            societyService.addMemberToSociety(society, user);
-            redirectAttributes.addFlashAttribute("success",
-                    user.getFullName() + " has been added to " + society.getName());
+            try {
+                societyService.addMemberToSociety(society, user);
+                redirectAttributes.addFlashAttribute("success",
+                        user.getFullName() + " has been added to " + society.getName());
+            } catch (IllegalStateException ex) {
+                redirectAttributes.addFlashAttribute("error", ex.getMessage());
+            }
         }
 
         return "redirect:/societies/" + id + "/members";

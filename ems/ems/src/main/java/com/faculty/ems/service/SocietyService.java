@@ -78,10 +78,15 @@ public class SocietyService {
         //check if admin has changed
         User newAdmin = society.getSocietyAdmin();
         if(!existing.getSocietyAdmin().getId().equals(newAdmin.getId())) {
-            existing.setSocietyAdmin(newAdmin);
-            addOrUpdateAdminMember(existing, newAdmin);
+            assignSocietyAdmin(existing, newAdmin);
         }
         societyRepo.save(existing);
+    }
+
+    public void assignSocietyAdmin(Society society, User newAdmin) {
+        society.setSocietyAdmin(newAdmin);
+        addOrUpdateAdminMember(society, newAdmin);
+        societyRepo.save(society);
     }
 
     private void addOrUpdateAdminMember(Society society, User admin) {
@@ -120,6 +125,9 @@ public class SocietyService {
     }
 
     public void addMemberToSociety(Society society, User user) {
+        if (!society.isActive()) {
+            throw new IllegalStateException("Cannot add members to an inactive society.");
+        }
         if(!memberRepo.existsBySocietyIdAndUserId(society.getId(),user.getId())) {
             SocietyMember member = new SocietyMember();
             member.setSociety(society);
