@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: mainLayout(~{::section})}">
+<head>
+    <title>My Societies</title>
+</head>
+<body>
+<section>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">My Societies</h2>
+            <p class="text-muted mb-0">Societies you are currently registered in</p>
+        </div>
+        <a th:href="@{/societies/all}" class="btn btn-primary btn-md">
+            <i class="bi bi-grid-3x3-gap me-2"></i>View All Societies
+        </a>
+    </div>
+
+    <div th:if="${#lists.isEmpty(societies)}" class="alert alert-info">
+        You are not registered in any society yet.
+    </div>
+
+    <div class="row g-5" th:if="${not #lists.isEmpty(societies)}">
+        <div class="col-lg-4 col-md-6" th:each="s : ${societies}">
+            <div class="card shadow-lg h-100 border-0 overflow-hidden">
+                <div class="card-header bg-primary bg-opacity-10 border-bottom-0 p-4 d-flex justify-content-center">
+                    <div class="rounded-circle bg-primary bg-opacity-25 p-3 d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="bi bi-people-fill fs-2 text-primary"></i>
+                    </div>
+                </div>
+                <div class="card-body d-flex flex-column text-center p-4">
+                    <h5 class="fw-bold card-title mb-2" th:text="${s.name}">Society Name</h5>
+                    <p class="text-muted small lh-lg mb-3 flex-grow-1" th:text="${s.description}">Society Description</p>
+                    <div class="mt-auto">
+                        <span th:class="${s.active ? 'badge bg-success mx-auto mb-2 px-3 py-1' : 'badge bg-danger mx-auto mb-2 px-3 py-1'}"
+                              th:text="${s.active ? '✓ Active' : '✗ Inactive'}">Status</span>
+                        <div class="badge text-black mx-auto px-4 py-2 fw-bold fs-6 d-block" th:text="'Admin: ' + ${s.societyAdmin.fullName}"></div>
+                    </div>
+                </div>
+                <div class="border-top"></div>
+                <div class="card-footer bg-white border-0 p-2 d-grid gap-1">
+                    <a th:href="@{/societies/{id}(id=${s.id})}" class="btn btn-info btn-sm fw-bold rounded-pill">
+                        <i class="bi bi-eye me-2"></i>View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

@@ -1,0 +1,275 @@
+Faculty Event Management System (EMS)
+Concepts applied in this project (with file locations)
+====================================================
+
+This document explains where these concepts are applied in your codebase:
+1) Design patterns
+2) Serialization
+3) Hibernate / JPA (ORM)
+4) Networking
+
+Project root used for paths in this document:
+  Event-Management-System\ems\ems\
+
+
+1) DESIGN PATTERNS
+------------------
+
+1.1 Strategy Pattern (Filtering)
+Purpose:
+  You apply different “filter rules” (strategies) to lists of Venues and VenueBookings
+  without hardcoding every condition inside the controller.
+
+Where it is implemented:
+
+A) Venue filtering strategies
+  - Strategy interface:
+    src\main\java\com\faculty\ems\strategy\VenueFilterStrategy.java
+
+  - Concrete strategy implementations:
+    src\main\java\com\faculty\ems\strategy\impl\SearchFilterStrategy.java
+    src\main\java\com\faculty\ems\strategy\impl\CapacityFilterStrategy.java
+    src\main\java\com\faculty\ems\strategy\impl\StatusFilterStrategy.java
+
+  - Strategy “context” (the class that applies all strategies):
+    src\main\java\com\faculty\ems\service\VenueFilterService.java
+
+  - Where it is used (controller calls context service):
+    src\main\java\com\faculty\ems\controller\VenueController.java
+      - listVenues(...) builds VenueFilterCriteria and calls venueFilterService.filter(...)
+
+B) Booking filtering strategies
+  - Strategy interface:
+    src\main\java\com\faculty\ems\strategy\BookingFilterStrategy.java
+
+  - Concrete strategy implementations:
+    src\main\java\com\faculty\ems\strategy\impl\VenueBookingFilter.java
+    src\main\java\com\faculty\ems\strategy\impl\SocietyBookingFilter.java
+    src\main\java\com\faculty\ems\strategy\impl\StatusBookingFilter.java
+
+  - Strategy “context”:
+    src\main\java\com\faculty\ems\service\BookingFilterService.java
+
+  - Where it is used:
+    src\main\java\com\faculty\ems\controller\VenueController.java
+      - viewBookingHistory(...) builds BookingFilterCriteria and calls bookingFilterService.filter(...)
+
+Why it is “Strategy”:
+  - You have an interface (Strategy) + multiple implementations (Concrete Strategies)
+  - The context collects them and applies them
+  - New rules can be added by creating a new strategy class without rewriting the controller
+
+
+1.2 Builder Pattern (Lombok @Builder)
+Purpose:
+  Create objects cleanly without huge constructors and many setters.
+
+Where it is applied:
+  - Entities/objects using Lombok builder:
+    src\main\java\com\faculty\ems\model\Society.java              (@Builder)
+    src\main\java\com\faculty\ems\model\User.java                (User.builder() is used in service)
+    src\main\java\com\faculty\ems\model\SocietyAdminRequest.java (created with SocietyAdminRequest.builder())
+
+  - Criteria DTOs using builder:
+    src\main\java\com\faculty\ems\dto\VenueFilterCriteria.java    (VenueFilterCriteria.builder())
+    src\main\java\com\faculty\ems\dto\BookingFilterCriteria.java  (BookingFilterCriteria.builder())
+
+Examples of usage location:
+  - VenueController builds filtering criteria:
+    src\main\java\com\faculty\ems\controller\VenueController.java
+
+  - Society admin request creation uses builder:
+    src\main\java\com\faculty\ems\service\SocietyAdminRequestService.java
+
+
+1.3 Dependency Injection (Spring IoC)
+Purpose:
+  Instead of manually creating objects with “new”, Spring creates and injects them.
+
+Where it is applied:
+  - Classes annotated with Spring stereotypes:
+    @Controller: src\main\java\com\faculty\ems\controller\*.java
+    @Service:     src\main\java\com\faculty\ems\service\*.java
+    @Repository:  src\main\java\com\faculty\ems\repository\*.java
+
+  - Injection styles:
+    a) Field injection using @Autowired (many controllers/services)
+    b) Constructor injection using Lombok @RequiredArgsConstructor:
+       src\main\java\com\faculty\ems\controller\EventController.java
+       src\main\java\com\faculty\ems\controller\BookingController.java
+       src\main\java\com\faculty\ems\service\VenueBookingService.java
+       src\main\java\com\faculty\ems\service\EventService.java
+
+1.4 singleton 
+  place where it applyed
+  :- securityconfig file passwordEncoder function
+
+2) SERIALIZATION
+----------------
+
+Important note:
+  In this project, “serialization” mainly appears as:
+  - HTTP responses being converted to JSON automatically by Spring (Jackson)
+  - DTOs/forms moving data between HTML forms and controllers (data binding)
+
+2.1 Spring MVC JSON Serialization (@ResponseBody)
+Where:
+  src\main\java\com\faculty\ems\controller\CalendarController.java
+
+What happens:
+  - Endpoint: GET /calendar/monthly-bookings
+  - Method returns: Map<String, Object>
+  - Because of @ResponseBody, Spring converts the returned Map to JSON.
+  - Browser (frontend JS) can call this endpoint and receive JSON.
+
+
+2.2 Server-side form binding (DTO / ModelAttribute)
+Where:
+  - Venue booking form uses DTO:
+    src\main\java\com\faculty\ems\dto\VenueBookingFormDto.java
+    src\main\java\com\faculty\ems\controller\BookingController.java
+      - @ModelAttribute("booking") VenueBookingFormDto bookingForm
+
+  - Society admin request form uses DTO:
+    src\main\java\com\faculty\ems\dto\SocietyAdminRequestDto.java
+    src\main\java\com\faculty\ems\controller\UserManagementController.java
+      - @ModelAttribute("request") SocietyAdminRequestDto dto
+
+This is not Java “Serializable”, but it is still a core “serialization/data binding” concept:
+  HTML form fields -> DTO fields -> server processing -> view rendering/redirect
+
+
+3) HIBERNATE / JPA (ORM)
+------------------------
+
+3.1 Entity mapping (Hibernate maps Java objects to DB tables)
+Where:
+  Entities are in:
+    src\main\java\com\faculty\ems\model\
+
+Common annotations used:
+  - @Entity, @Table
+  - @Id, @GeneratedValue
+  - @ManyToOne, @JoinColumn (relationships)
+  - Hibernate timestamp annotations like @CreationTimestamp
+
+Examples:
+  - Venue:
+    src\main\java\com\faculty\ems\model\Venue.java
+      - @Entity @Table(name="venues")
+      - unique venue name is enforced at DB level using:
+        @Column(nullable=false, unique=true)
+
+  - Event:
+    src\main\java\com\faculty\ems\model\Event.java
+      - @ManyToOne society
+      - @ManyToOne organiser
+
+  - VenueBooking:
+    src\main\java\com\faculty\ems\model\VenueBooking.java
+      - @ManyToOne event / venue / society / requestedBy / reviewedBy
+
+  - Society / SocietyMember / SocietyAdminRequest:
+    src\main\java\com\faculty\ems\model\Society.java
+    src\main\java\com\faculty\ems\model\SocietyMember.java
+    src\main\java\com\faculty\ems\model\SocietyAdminRequest.java
+
+
+3.2 Repositories (Spring Data JPA)
+Where:
+  Repository interfaces are in:
+    src\main\java\com\faculty\ems\repository\
+
+They extend JpaRepository, giving you CRUD and query methods.
+Examples:
+  - VenueRepository:
+    src\main\java\com\faculty\ems\repository\VenueRepository.java
+
+  - VenueBookingRepository (also contains JPQL queries):
+    src\main\java\com\faculty\ems\repository\VenueBookingRepository.java
+      - @Query(...) methods like findConflicting(...)
+
+  - EventRepository:
+    src\main\java\com\faculty\ems\repository\EventRepository.java
+
+  - SocietyRepository:
+    src\main\java\com\faculty\ems\repository\SocietyRepository.java
+
+  - UserRepository:
+    src\main\java\com\faculty\ems\repository\UserRepository.java
+
+
+3.3 Transaction management (@Transactional)
+Where:
+  - SocietyAdminRequestService:
+    src\main\java\com\faculty\ems\service\SocietyAdminRequestService.java
+  - UserService:
+    src\main\java\com\faculty\ems\service\UserService.java
+
+Meaning:
+  Spring manages DB transactions for methods in these services.
+
+
+3.4 Hibernate configuration (database connection + DDL)
+Where:
+  src\main\resources\application.properties
+Key items:
+  - spring.datasource.* for MySQL connection
+  - spring.jpa.hibernate.ddl-auto=update (Hibernate updates schema automatically)
+
+
+4) NETWORKING
+-------------
+
+4.1 HTTP networking (Web application endpoints)
+Where:
+  Controllers define HTTP routes using @GetMapping / @PostMapping.
+  Directory:
+    src\main\java\com\faculty\ems\controller\
+
+Examples:
+  - Events:
+    src\main\java\com\faculty\ems\controller\EventController.java
+      GET  /events
+      GET  /events/new
+      POST /events/new
+      GET  /events/{id}
+      GET  /events/{id}/edit
+      POST /events/{id}/edit
+      POST /events/{id}/delete
+
+  - Venues:
+    src\main\java\com\faculty\ems\controller\VenueController.java
+      GET  /venues
+      GET  /venues/addVenue
+      POST /venues/save
+      POST /venues/{id}/delete
+      ... plus booking approval/reject/postpone endpoints
+
+  - Bookings (Society admin booking flow):
+    src\main\java\com\faculty\ems\controller\BookingController.java
+      GET  /bookings/new
+      POST /bookings/new
+      GET  /bookings/my
+      POST /bookings/{id}/cancel
+
+
+4.2 Email networking (SMTP)
+Where:
+  - Email sending code:
+    src\main\java\com\faculty\ems\service\EmailService.java
+      Uses JavaMailSender -> mailSender.send(...)
+
+  - SMTP configuration:
+    src\main\resources\application.properties
+      spring.mail.host, spring.mail.port, spring.mail.username, spring.mail.password, etc.
+
+
+4.3 Browser networking (Fetch API)
+Where:
+  The browser makes network requests using JavaScript fetch:
+    src\main\resources\templates\venues\list.html
+      - fetch(url) is used for live filtering updates
+
+
+End of document
