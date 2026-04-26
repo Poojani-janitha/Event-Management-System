@@ -45,7 +45,8 @@ public class BookingController {
         List<Long> allowedSocietyIds = getAllowedSocietyIds(user);
         List<com.faculty.ems.model.Event> allowedEvents = eventService.findBySocietyIds(allowedSocietyIds)
                 .stream()
-                .filter(e -> e.getStatus() == com.faculty.ems.model.Event.EventStatus.DRAFT)
+                .filter(e -> e.getStatus() == com.faculty.ems.model.Event.EventStatus.DRAFT
+                        || e.getStatus() == com.faculty.ems.model.Event.EventStatus.POSTPONED)
                 .toList();
 
         if (eventId != null && allowedEvents.stream().noneMatch(e -> e.getId().equals(eventId))) {
@@ -71,7 +72,8 @@ public class BookingController {
         List<Long> allowedSocietyIds = getAllowedSocietyIds(user);
         List<com.faculty.ems.model.Event> allowedEvents = eventService.findBySocietyIds(allowedSocietyIds)
                 .stream()
-                .filter(e -> e.getStatus() == com.faculty.ems.model.Event.EventStatus.DRAFT)
+                .filter(e -> e.getStatus() == com.faculty.ems.model.Event.EventStatus.DRAFT
+                        || e.getStatus() == com.faculty.ems.model.Event.EventStatus.POSTPONED)
                 .toList();
 
         if (result.hasErrors()) {

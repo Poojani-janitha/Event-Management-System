@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Collection;
 
 public interface VenueBookingRepository extends JpaRepository<VenueBooking, Long> {
 
@@ -34,6 +35,8 @@ public interface VenueBookingRepository extends JpaRepository<VenueBooking, Long
         List<VenueBooking> findByEventIdOrderByBookingDateDesc(Long eventId);
 
     boolean existsByEventId(Long eventId);
+
+    boolean existsByEventIdAndStatusIn(Long eventId, Collection<VenueBooking.BookingStatus> statuses);
 
     @Query("""
         SELECT b FROM VenueBooking b

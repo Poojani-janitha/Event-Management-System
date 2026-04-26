@@ -138,6 +138,15 @@
             </a>
         </div>
 
+        <!-- Alert Messages (create/update/delete feedback) -->
+        <div th:if="${message}"
+             th:class="'alert alert-' + (${messageType} != null ? ${messageType} : 'info') + ' alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4'"
+             role="alert">
+            <i th:class="${messageType == 'success'} ? 'bi bi-check-circle-fill me-2' : 'bi bi-exclamation-triangle-fill me-2'"></i>
+            <span th:utext="${message}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
         <!-- Calendar and Details Row (9/12 and 3/12 Ratio) -->
         <div class="row g-4 mb-5">
             <!-- Calendar Column (3/4 size) -->

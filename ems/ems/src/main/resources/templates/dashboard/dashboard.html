@@ -112,7 +112,7 @@
                 border-radius: 6px;
             }
         </style>
-        <h4 class="mb-4">Welcome, <span th:text="${username}"></span></h4>
+        <!-- <h4 class="mb-4">Welcome, <span th:text="${username}"></span></h4> -->
 
         <!-- Calendar and Details Row (9/12 and 3/12 Ratio) -->
     <div class="row g-4 mb-5">
@@ -220,18 +220,7 @@
     </div>
 
 
-    <!-- Hidden Storage -->
-    <div id="bookingDataStorage" style="display:none;" th:if="${calendar != null}">
-        <div th:each="entry : ${calendar.bookingsByDay}">
-            <div th:id="'bookings-day-' + ${entry.key}">
-                <div th:each="booking : ${entry.value}" class="booking-item-data"
-                        th:data-title="${booking.event.title}" th:data-venue="${booking.venue.name}"
-                        th:data-time="${#temporals.format(booking.startTime, 'HH:mm') + ' - ' + #temporals.format(booking.endTime, 'HH:mm')}"
-                        th:data-society="${booking.society.name}" th:data-status="${booking.status}"
-                        th:data-note="${booking.adminNote}"></div>
-            </div>
-        </div>
-    </div>
+    <!-- Calendar booking data is loaded via JSON API (serialization demo) -->
 
         <!-- ADMIN: pending venue booking requests -->
         <div sec:authorize="hasRole('ADMIN')">
@@ -269,7 +258,7 @@
                                     </span>
                                 </td>
                                 <td th:text="${booking.bookingDate}"></td>
-                                <td th:text="${booking.startTime} + ' â€“ ' + ${booking.endTime}"></td>
+                                <td th:text="${booking.startTime} + ' - ' + ${booking.endTime}"></td>
                                 <td><span class="badge bg-warning text-dark">PENDING</span></td>
                             </tr>
                         </tbody>
@@ -279,6 +268,7 @@
         </div>
 
     <div sec:authorize="hasRole('ADMIN')">
+        <br>
         <h5 class="mb-3">Pending Society Admin Requests</h5>
 
         <div th:if="${#lists.isEmpty(pendingSocietyRequest)}" class="alert alert-info">
@@ -292,7 +282,7 @@
                     <tr>
                         <th>User</th>
                         <th>Society Name</th>
-                        <th>Contact Email</th>
+                        <th>Requester Email</th>
                         <th>Description</th>
                         <th>Status</th>
                         <th>Action</th>
@@ -302,7 +292,7 @@
                     <tr th:each="request : ${pendingSocietyRequest}">
                         <td th:text="${request.user.fullName}"></td>
                         <td th:text="${request.societyName}"></td>
-                        <td th:text="${request.contactEmail}"></td>
+                        <td th:text="${request.user.email}"></td>
                         <td th:text="${request.description}"></td>
                         <td>
                                 <span th:text="${request.status}"
@@ -312,7 +302,12 @@
                         <td>
                             <form th:action="@{/admin/society-requests/{id}/approve(id=${request.id})}" method="post" class="d-inline"
                                   onsubmit="return confirm('Approve confirmed?')">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Approved</button>
+                                <button type="submit" class="btn btn-sm btn-outline-success">Approve</button>
+                            </form>
+                            <form th:action="@{/admin/society-requests/{id}/reject(id=${request.id})}" method="post" class="d-inline ms-1"
+                                  onsubmit="return confirm('Reject this request?')">
+                                <input type="hidden" name="reason" value="Rejected by admin from dashboard">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
                             </form>
                         </td>
                     </tr>
@@ -416,7 +411,7 @@
                                 </span>
                         </td>
                         <td th:text="${booking.bookingDate}"></td>
-                        <td th:text="${booking.startTime} + ' â€“ ' + ${booking.endTime}"></td>
+                        <td th:text="${booking.startTime} + ' - ' + ${booking.endTime}"></td>
                         <td><span class="badge bg-success text-dark">Approved</span></td>
                     </tr>
                     </tbody>
@@ -427,7 +422,23 @@
 
 
     <script>
-        function showServerBookingDetails(day) {
+        let calendarApiCache = null;
+
+        async function loadCalendarApiData() {
+            const yearSelect = document.getElementById('yearSelect');
+            const monthSelect = document.getElementById('monthSelect');
+            const year = yearSelect ? yearSelect.value : new Date().getFullYear();
+            const month = monthSelect ? monthSelect.value : new Date().getMonth() + 1;
+
+            const url = `/calendar/api/global-monthly-bookings?year=${encodeURIComponent(year)}&month=${encodeURIComponent(month)}`;
+            const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            if (!res.ok) {
+                throw new Error(`Failed to load calendar data (${res.status})`);
+            }
+            calendarApiCache = await res.json();
+        }
+
+        async function showServerBookingDetails(day) {
             const yearSelect = document.getElementById('yearSelect');
             const monthSelect = document.getElementById('monthSelect');
             const year = yearSelect ? yearSelect.value : new Date().getFullYear();
@@ -440,19 +451,24 @@
             const emptyMsg = document.getElementById('emptyDetailMessage');
             container.innerHTML = '';
 
-            const data = document.getElementById('bookings-day-' + day);
-            if (data) {
-                data.querySelectorAll('.booking-item-data').forEach(item => {
-                    const title = item.getAttribute('data-title');
-                    const venue = item.getAttribute('data-venue');
-                    const time = item.getAttribute('data-time');
-                    const society = item.getAttribute('data-society');
-                    const status = item.getAttribute('data-status');
-                    const note = item.getAttribute('data-note');
+            try {
+                if (!calendarApiCache || String(calendarApiCache.year) !== String(year) || String(calendarApiCache.month) !== String(month)) {
+                    await loadCalendarApiData();
+                }
 
-                    const div = document.createElement('div');
-                    div.className = 'booking-item';
-                    div.innerHTML = `
+                const dayBookings = calendarApiCache?.bookingsByDay?.[day] || calendarApiCache?.bookingsByDay?.[String(day)];
+                if (dayBookings && dayBookings.length > 0) {
+                    dayBookings.forEach(b => {
+                        const title = b.eventTitle || '';
+                        const venue = b.venueName || '';
+                        const time = `${b.startTime || ''} - ${b.endTime || ''}`;
+                        const society = b.societyName || '';
+                        const status = b.status || '';
+                        const note = b.adminNote || '';
+
+                        const div = document.createElement('div');
+                        div.className = 'booking-item';
+                        div.innerHTML = `
                         <div class="mb-3">
                             <span class="badge-venue mb-2 d-inline-block">${venue}</span>
                             <h6 class="fw-bold mb-1">${title}</h6>
@@ -465,11 +481,15 @@
                             ${(note && note !== 'null' && note !== '') ? `<div class="mt-2 pt-2 border-top extra-small text-muted fst-italic">"${note}"</div>` : ''}
                         </div>
                     `;
-                    container.appendChild(div);
-                });
-                emptyMsg.style.display = 'none';
-                container.style.display = 'block';
-            } else {
+                        container.appendChild(div);
+                    });
+                    emptyMsg.style.display = 'none';
+                    container.style.display = 'block';
+                } else {
+                    emptyMsg.style.display = 'block';
+                    container.style.display = 'none';
+                }
+            } catch (e) {
                 emptyMsg.style.display = 'block';
                 container.style.display = 'none';
             }

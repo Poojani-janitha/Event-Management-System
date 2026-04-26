@@ -1,87 +1,296 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      th:fragment="mainLayout(content)">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  th:fragment="mainLayout(content)">
+
 <head>
   <meta charset="UTF-8">
-  <title>Faculty EMS</title>
+  <title>FOT EMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
   <style>
-    /* Always reserve space for scrollbar to prevent layout shift */
-    html, body { overflow-y: scroll; }
-    
-    /* Simple sidebar styling */
-    .sidebar { width: 180px; min-height: 100vh; flex-shrink: 0; transition: all 0.3s; }
-    .main-content { flex-grow: 1; background-color: #f8f9fa; }
-    .card { border-radius: 15px; }
+    :root {
+      --brand-ink: #12324a;
+      --brand-sky: #78d0ea;
+      --brand-soft: #e9f6fb;
+      --surface: #f4f8fb;
+      --nav-text: #5d6f81;
+      --nav-active: #0f5978;
+    }
+
+    html,
+    body {
+      overflow-y: scroll;
+      font-family: 'Manrope', sans-serif;
+      background: radial-gradient(circle at 90% 0%, #e8f9ff 0%, #f5f9fc 55%, #f8fbfd 100%);
+    }
+
+    .app-shell {
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 255px;
+      min-height: 100vh;
+      flex-shrink: 0;
+      background: linear-gradient(165deg, #ffffff 0%, #f6fbff 65%, #ecf5fb 100%);
+      border-right: 1px solid #dbe9f4;
+    }
+
+    .brand-lockup {
+      padding: 1.5rem;
+      border-bottom: 1px solid #dbe9f4;
+    }
+
+    .brand-title {
+      color: var(--brand-ink);
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .brand-subtitle {
+      color: #71879b;
+      font-size: 0.78rem;
+      margin-top: 0.2rem;
+    }
+
+    .nav-stack {
+      padding: 0.75rem;
+    }
+
+    .nav-pill {
+      border: 0;
+      border-radius: 12px;
+      padding: 0.75rem 0.85rem;
+      color: var(--nav-text);
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-pill:hover {
+      background: #edf5fb;
+      color: #23455e;
+    }
+
+    .nav-pill.active {
+      background: linear-gradient(90deg, #dff4ff 0%, #e8f7ff 100%);
+      color: var(--nav-active);
+      box-shadow: inset 0 0 0 1px #c7e7f5;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      background: transparent;
+    }
+
+    .topbar {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #dce9f2;
+      position: relative;
+      z-index: 1200;
+    }
+
+    .welcome-copy {
+      color: #264258;
+      font-weight: 700;
+      font-size: 1.04rem;
+    }
+
+    .role-chip {
+      font-size: 0.76rem;
+      border-radius: 999px;
+      padding: 0.2rem 0.65rem;
+      background: var(--brand-soft);
+      color: #285a75;
+      font-weight: 700;
+      margin-left: 0.55rem;
+    }
+
+    .notification-btn {
+      border-radius: 999px;
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #d8e6f2;
+      background: #ffffff;
+    }
+
+    .notification-menu {
+      min-width: 320px;
+      max-height: 380px;
+      overflow: auto;
+      border: 1px solid #dbe7f2;
+      border-radius: 14px;
+      box-shadow: 0 18px 40px rgba(16, 52, 84, 0.14);
+      padding: 0.4rem;
+      z-index: 2000;
+    }
+
+    .notification-item {
+      border-radius: 10px;
+      padding: 0.55rem 0.7rem;
+      white-space: normal;
+    }
+
+    .notification-item:hover {
+      background: #f2f8fc;
+    }
+
+    .card {
+      border-radius: 14px;
+    }
+
+    @media (max-width: 992px) {
+      .sidebar {
+        width: 220px;
+      }
+
+      .welcome-copy {
+        font-size: 0.95rem;
+      }
+    }
   </style>
 </head>
+
 <body>
-<div class="d-flex">
-  <nav class="sidebar bg-white border-end shadow-sm">
-    <div class="p-4 border-bottom">
-      <h4 class="text-primary mb-0"><i class="bi bi-visualboard"></i> Visualboard</h4>
-    </div>
-    <div class="list-group list-group-flush p-2">
-      <a th:href="@{/dashboard}" class="list-group-item list-group-item-action border-0 py-3 rounded">
-        <i class="bi bi-speedometer2 me-2"></i> Dashboard
-      </a>
-      <a th:href="@{/societies}" class="list-group-item list-group-item-action border-0 py-3 rounded">
-        <i class="bi bi-people me-2"></i> Societies
-      </a>
-      <a th:href="@{/events}" class="list-group-item list-group-item-action border-0 py-3 rounded">
-        <i class="bi bi-calendar-event me-2"></i> Events
-      </a>
-      <a th:href="@{/venues}" class="list-group-item list-group-item-action border-0 py-3 rounded"
-         sec:authorize="hasRole('ADMIN')">
-        <i class="bi bi-building me-2"></i> Venue Management
-      </a>
-      <a th:href="@{/venues/history}" class="list-group-item list-group-item-action border-0 py-3 rounded"
-         sec:authorize="hasRole('ADMIN')">
-        <i class="bi bi-clock-history me-2"></i> Booking History
-      </a>
-      <a th:href="@{/venues/requests}" class="list-group-item list-group-item-action border-0 py-3 rounded"
-         sec:authorize="hasRole('ADMIN')">
-        <i class="bi bi-check2-square me-2"></i> Booking Requests
-      </a>
-      <a th:href="@{/bookings/new}" class="list-group-item list-group-item-action border-0 py-3 rounded"
-        sec:authorize="hasRole('SOCIETY_ADMIN')">
-        <i class="bi bi-plus-circle me-2"></i> Book Venue
-      </a>
-      <a th:href="@{/users}" class="list-group-item list-group-item-action border-0 py-3 rounded"
-         sec:authorize="hasRole('ADMIN')">
-        <i class="bi bi-people me-2"></i> User Management
-      </a>
-
-      <a th:href="@{/users/society-admin-request}" class="list-group-item list-group-item-action border-0 py-3 rounded"
-        sec:authorize="hasAnyRole('MEMBER','SOCIETY_ADMIN')">
-        <i class="bi bi-people me-2"></i> Admin Request
-      </a>
-    </div>
-  </nav>
-
-  <div class="main-content">
-    <header class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4 py-3 shadow-sm">
-      <div class="container-fluid">
-        <span class="navbar-text fw-bold text-dark fs-5">Good Morning, User</span>
-        <div class="ms-auto d-flex align-items-center">
-          <button class="btn btn-light position-relative me-3 rounded-circle">
-            <i class="bi bi-bell"></i>
-          </button>
-          <form th:action="@{/logout}" method="post" class="d-inline">
-            <button class="btn btn-outline-danger btn-sm rounded-pill px-3">Logout</button>
-          </form>
-        </div>
+  <div class="d-flex app-shell">
+    <nav class="sidebar shadow-sm">
+      <div class="brand-lockup">
+        <h4 class="brand-title"><i class="bi bi-buildings me-1"></i> Faculty EMS</h4>
+        <div class="brand-subtitle">Campus Events Command Center</div>
       </div>
-    </header>
+      <div class="list-group list-group-flush nav-stack">
+        <a th:href="@{/dashboard}" class="list-group-item list-group-item-action nav-pill"
+          th:classappend="${currentRequestUri == '/dashboard'} ? ' active' : ''">
+          <i class="bi bi-speedometer2 me-2"></i> Dashboard
+        </a>
 
-    <main class="p-4">
-      <div th:replace="${content}"></div>
-    </main>
+        <a th:href="@{/users}" class="list-group-item list-group-item-action nav-pill"
+          th:classappend="${currentRequestUri.startsWith('/users') and not currentRequestUri.startsWith('/users/society-admin-request')} ? ' active' : ''"
+          sec:authorize="hasRole('ADMIN')">
+          <i class="bi bi-people me-2"></i> User Management
+        </a>
+
+        <a th:href="@{/users/society-admin-request}" class="list-group-item list-group-item-action nav-pill"
+          th:classappend="${currentRequestUri.startsWith('/users/society-admin-request')} ? ' active' : ''"
+          sec:authorize="hasAnyRole('MEMBER','SOCIETY_ADMIN')">
+          <i class="bi bi-person-check me-2"></i> Admin Request
+        </a>
+
+        <a th:href="@{/societies}" class="list-group-item list-group-item-action nav-pill"
+          th:classappend="${currentRequestUri.startsWith('/societies')} ? ' active' : ''">
+          <i class="bi bi-people me-2"></i> Societies
+        </a>
+
+        <a th:href="@{/venues}" class="list-group-item list-group-item-action nav-pill"
+          th:classappend="${currentRequestUri == '/venues'} ? ' active' : ''" sec:authorize="hasRole('ADMIN')">
+          <i class="bi bi-building me-2"></i> Venue Management
+        </a>
+
+        <a th:href="@{/events}" class="list-group-item list-group-item-action nav-pill"
+          th:classappend="${currentRequestUri.startsWith('/events')} ? ' active' : ''">
+          <i class="bi bi-calendar-event me-2"></i> Events
+        </a>
+
+        <a th:href="@{/bookings/new}" class="list-group-item list-group-item-action nav-pill"
+          th:classappend="${currentRequestUri.startsWith('/bookings/new')} ? ' active' : ''"
+          sec:authorize="hasRole('SOCIETY_ADMIN')">
+          <i class="bi bi-plus-circle me-2"></i> Book Venue
+        </a>
+
+        <a th:href="@{/venues/requests}" class="list-group-item list-group-item-action nav-pill"
+          th:classappend="${currentRequestUri.startsWith('/venues/requests')} ? ' active' : ''"
+          sec:authorize="hasRole('ADMIN')">
+          <i class="bi bi-check2-square me-2"></i> Booking Approval
+        </a>
+
+        <a th:href="@{/venues/history}" class="list-group-item list-group-item-action nav-pill"
+          th:classappend="${currentRequestUri.startsWith('/venues/history')} ? ' active' : ''"
+          sec:authorize="hasRole('ADMIN')">
+          <i class="bi bi-clock-history me-2"></i> Booking History
+        </a>
+
+
+
+
+
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <header class="navbar navbar-expand-lg navbar-light topbar px-4 py-4">
+        <div class="container-fluid">
+          <span class="navbar-text welcome-copy">
+            <span id="timeGreeting">Good Morning</span>,
+            <span sec:authentication="name">User</span>
+            <span class="role-chip">
+              <span sec:authorize="hasRole('ADMIN')">Admin</span>
+              <span sec:authorize="hasRole('SOCIETY_ADMIN')">Society Admin</span>
+              <span sec:authorize="hasRole('MEMBER')">Member</span>
+            </span>
+          </span>
+          <div class="ms-auto d-flex align-items-center">
+            <div class="dropdown me-3">
+              <button class="btn notification-btn dropdown-toggle position-relative" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-bell"></i>
+                <span th:if="${headerNotificationCount > 0}"
+                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                  th:text="${headerNotificationCount}">0</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end notification-menu">
+                <li class="px-2 py-1 text-muted small fw-semibold">Notifications</li>
+                <li th:if="${#lists.isEmpty(headerNotifications)}" class="px-2 py-3 text-center text-muted small">No new
+                  notifications.</li>
+                <li th:each="item : ${headerNotifications}">
+                  <a class="dropdown-item notification-item" th:href="${item.link}">
+                    <div class="fw-semibold" th:text="${item.title}"></div>
+                    <div class="small text-muted" th:text="${item.message}"></div>
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <form th:action="@{/logout}" method="post" class="d-inline">
+              <button class="btn btn-outline-danger btn-sm rounded-pill px-3">Logout</button>
+            </form>
+          </div>
+        </div>
+      </header>
+
+      <main class="p-4">
+        <div th:replace="${content}"></div>
+      </main>
+    </div>
   </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function updateTimeGreeting() {
+      const greetingEl = document.getElementById('timeGreeting');
+      if (!greetingEl) return;
+
+      const hour = new Date().getHours();
+      let greeting = 'Good Evening';
+
+      if (hour < 12) {
+        greeting = 'Good Morning';
+      } else if (hour < 17) {
+        greeting = 'Good Afternoon';
+      }
+
+      greetingEl.textContent = greeting;
+    })();
+  </script>
 </body>
+
 </html>

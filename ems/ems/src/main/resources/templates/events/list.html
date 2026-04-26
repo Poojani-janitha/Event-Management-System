@@ -66,7 +66,8 @@
               th:href="@{/bookings/new(eventId=${event.id})}"
               class="btn btn-sm btn-success"
               sec:authorize="hasRole('SOCIETY_ADMIN')">Book Venue</a>
-            <a th:href="@{/events/{id}/edit(id=${event.id})}"
+            <a th:if="${event.status.name() != 'PUBLISHED'}"
+               th:href="@{/events/{id}/edit(id=${event.id})}"
                class="btn btn-sm btn-warning"
                sec:authorize="hasRole('SOCIETY_ADMIN')">Edit</a>
             <form th:if="${event.status.name() != 'PUBLISHED'}"

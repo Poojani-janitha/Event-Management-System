@@ -68,7 +68,14 @@ public class EventController {
         // Map events to include booking status
         Map<Long, Boolean> eventHasBooking = new LinkedHashMap<>();
         for (Event event : events) {
-            eventHasBooking.put(event.getId(), bookingRepo.existsByEventId(event.getId()));
+            boolean hasActiveBookingFlow = bookingRepo.existsByEventIdAndStatusIn(
+                    event.getId(),
+                    java.util.EnumSet.of(
+                            com.faculty.ems.model.VenueBooking.BookingStatus.PENDING,
+                            com.faculty.ems.model.VenueBooking.BookingStatus.APPROVED
+                    )
+            );
+            eventHasBooking.put(event.getId(), hasActiveBookingFlow);
         }
 
         model.addAttribute("events", events);

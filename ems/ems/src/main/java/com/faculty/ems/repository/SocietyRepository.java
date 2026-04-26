@@ -13,4 +13,12 @@ public interface SocietyRepository extends JpaRepository<Society, Integer> {
     List<Society> findByActiveTrue();
     Optional<Society> findBySocietyAdminId(Integer adminId);
     List<Society> findAllBySocietyAdminId(Integer adminId);
+
+    boolean existsByNameIgnoreCase(String name);
+
+    boolean existsByContactEmailIgnoreCase(String contactEmail);
+
+    boolean existsByNameIgnoreCaseAndIdNot(String name, Integer id);
+
+    boolean existsByContactEmailIgnoreCaseAndIdNot(String contactEmail, Integer id);
 }

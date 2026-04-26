@@ -8,7 +8,10 @@
 <body>
   <section>
   <div class="container mt-4" style="max-width:600px">
-    <h2>Request Venue Booking</h2>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">Request Venue Booking</h2>
+      <a th:href="@{/dashboard}" class="btn btn-outline-primary btn-sm">My Booking</a>
+    </div>
 
     <div th:if="${error}" class="alert alert-danger">
       <strong>Booking Conflict:</strong>

@@ -30,6 +30,7 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr class="small text-uppercase text-muted">
+                                <th class="py-3 px-3 text-center">Details</th>
                                 <th class="py-3 px-4">Request Details</th>
                                 <th class="py-3">Venue & Time</th>
                                 <th class="py-3">Society</th>
@@ -38,7 +39,19 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="booking : ${bookings}">
+                            <th:block th:each="booking : ${bookings}">
+                            <tr>
+                                <!-- //drop down list for more details of the booking request, such as requester name, email, event type, description, status, etc. -->
+                                <td class="text-center px-3">
+                                    <button class="btn btn-sm btn-light border rounded-circle"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            th:data-bs-target="'#booking-details-' + ${booking.id}"
+                                            aria-expanded="false"
+                                            th:aria-controls="'booking-details-' + ${booking.id}">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </button>
+                                </td>
                                 <td class="py-4 px-4">
                                     <div class="fw-bold text-dark" th:text="${booking.event.title}">Event Title</div>
                                     <div class="extra-small text-muted" th:text="${#temporals.format(booking.bookingDate, 'EEEE, MMM dd, yyyy')}">Date</div>
@@ -80,8 +93,40 @@
                                     </form>
                                 </td>
                             </tr>
+                            <tr>
+                                <!-- //dropdown details row -->
+                                <td colspan="6" class="p-0 border-0">
+                                    <div class="collapse bg-light" th:id="'booking-details-' + ${booking.id}">
+                                        <div class="p-3 border-top">
+                                            <div class="row g-3 small">
+                                                <div class="col-md-4">
+                                                    <div class="text-muted text-uppercase">Requested By</div>
+                                                    <div class="fw-semibold" th:text="${booking.requestedBy != null ? booking.requestedBy.fullName : 'N/A'}"></div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="text-muted text-uppercase">Requester Email</div>
+                                                    <div class="fw-semibold" th:text="${booking.requestedBy != null ? booking.requestedBy.email : 'N/A'}"></div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="text-muted text-uppercase">Event Type</div>
+                                                    <div class="fw-semibold" th:text="${booking.event.eventType}"></div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="text-muted text-uppercase">Event Description</div>
+                                                    <div th:text="${booking.event.description != null ? booking.event.description : 'No description'}"></div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="text-muted text-uppercase">Event Status</div>
+                                                    <span class="badge bg-secondary" th:text="${booking.event.status}"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            </th:block>
                             <tr th:if="${#lists.isEmpty(bookings)}">
-                                <td colspan="5" class="text-center py-5 text-muted">
+                                <td colspan="6" class="text-center py-5 text-muted">
                                     <div class="opacity-25 mb-3">
                                         <i class="bi bi-check2-all fs-1"></i>
                                     </div>

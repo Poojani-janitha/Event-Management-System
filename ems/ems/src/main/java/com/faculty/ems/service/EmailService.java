@@ -1,6 +1,7 @@
 package com.faculty.ems.service;
 
 import com.faculty.ems.model.VenueBooking;
+import com.faculty.ems.model.SocietyAdminRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -49,6 +50,38 @@ public class EmailService {
         } catch (Exception e) {
             // Log the error but don't crash the application
             System.err.println("Failed to send email to " + to + ": " + e.getMessage());
+        }
+    }
+
+    // This method can be called after processing a society admin request to notify the user of the decision
+    public void sendSocietyRequestDecisionEmail(SocietyAdminRequest request) {
+        if (request == null || request.getUser() == null || request.getUser().getEmail() == null) {
+            return;
+        }
+
+        String to = request.getUser().getEmail();
+        String subject = "Society Admin Request " + request.getStatus();
+
+        StringBuilder message = new StringBuilder();
+        message.append("Dear ").append(request.getUser().getFullName()).append(",\n\n");
+        message.append("Your society admin request for '").append(request.getSocietyName()).append("' is ")
+                .append(request.getStatus()).append(".\n\n");
+
+        if (request.getReviewNotes() != null && !request.getReviewNotes().isBlank()) {
+            message.append("Review Notes: ").append(request.getReviewNotes()).append("\n\n");
+        }
+
+        message.append("Thank you,\nFaculty Event Management Team");
+
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setTo(to);
+        mail.setSubject(subject);
+        mail.setText(message.toString());
+
+        try {
+            mailSender.send(mail);
+        } catch (Exception e) {
+            System.err.println("Failed to send society request email to " + to + ": " + e.getMessage());
         }
     }
 }

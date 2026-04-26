@@ -8,6 +8,7 @@ import com.faculty.ems.repository.VenueBookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.EnumSet;
 import java.util.List;
 
 @Service
@@ -20,6 +21,35 @@ public class VenueBookingService {
 
     
     public VenueBooking requestBooking(VenueBooking booking) {
+        Long eventId = booking.getEvent().getId();
+
+        // Only block re-booking when there is an ACTIVE booking flow for the event.
+        // If a booking was postponed/rejected/cancelled, we allow a fresh request.
+        boolean hasActiveBookingForEvent = bookingRepo.existsByEventIdAndStatusIn(
+                eventId,
+                EnumSet.of(VenueBooking.BookingStatus.PENDING, VenueBooking.BookingStatus.APPROVED)
+        );
+
+        if (hasActiveBookingForEvent) {
+            VenueBooking existing = bookingRepo.findByEventIdOrderByBookingDateDesc(eventId)
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
+
+            if (existing != null) {
+                throw new BookingConflictException(
+                        "A venue booking already exists for event '" + booking.getEvent().getTitle() +
+                                "' at '" + existing.getVenue().getName() + "' on " + existing.getBookingDate() +
+                                " (Status: " + existing.getStatus() + "). You cannot book the same venue again."
+                );
+            }
+
+            throw new BookingConflictException(
+                    "A venue booking already exists for event '" + booking.getEvent().getTitle() +
+                            "'. You cannot book the same venue again."
+            );
+        }
+
         List<VenueBooking> conflicts = bookingRepo.findConflicting(
             booking.getVenue().getId(),
             booking.getBookingDate(),
@@ -27,12 +57,14 @@ public class VenueBookingService {
             booking.getEndTime()
         );
 
+        //conflict check: Ensure no other APPROVED booking overlaps
         if (!conflicts.isEmpty()) {
             VenueBooking clash = conflicts.get(0);
             throw new BookingConflictException(
                 "'" + clash.getVenue().getName() + "' is already booked on " +
                 clash.getBookingDate() + " from " +
                 clash.getStartTime() + " to " + clash.getEndTime() +
+                " for event '" + clash.getEvent().getTitle() + "'" +
                 " (Status: " + clash.getStatus() + ")."
             );
         }
@@ -81,6 +113,7 @@ public class VenueBookingService {
                     "Cannot approve! '" + clash.getVenue().getName() + "' is already booked on " +
                             clash.getBookingDate() + " from " +
                             clash.getStartTime() + " to " + clash.getEndTime() +
+                            " for event '" + clash.getEvent().getTitle() + "'" +
                             " (Status: " + clash.getStatus() + ")."
             );
         }
@@ -117,6 +150,7 @@ public class VenueBookingService {
         }
 
         // Postponement is represented as a rejected booking with a postponed event.
+        // The rejected booking allows society admin to request a new booking later.
         booking.setStatus(VenueBooking.BookingStatus.REJECTED);
         booking.setAdminNote(note);
 

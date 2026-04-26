@@ -1,6 +1,7 @@
 package com.faculty.ems.controller;
 
 import com.faculty.ems.dto.CalendarDto;
+import com.faculty.ems.dto.CalendarApiDto;
 import com.faculty.ems.model.Venue;
 import com.faculty.ems.service.CalendarService;
 import com.faculty.ems.service.VenueService;
@@ -133,5 +134,16 @@ public class CalendarController {
         response.put("daysInMonth",    yearMonth.lengthOfMonth());
         response.put("startDayOfWeek", startDate.getDayOfWeek().getValue());
         return response;
+    }
+
+    /**
+     * Typed JSON API for calendar data (demonstrates Jackson serialization using DTOs).
+     * This avoids returning JPA entities directly.
+     */
+    @GetMapping("/api/global-monthly-bookings")
+    @ResponseBody
+    public CalendarApiDto getGlobalMonthlyBookingsApi(@RequestParam int year,
+                                                      @RequestParam int month) {
+        return calendarService.getGlobalCalendarApiData(year, month);
     }
 }

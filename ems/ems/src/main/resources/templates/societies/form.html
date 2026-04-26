@@ -11,6 +11,8 @@
             <div class="card-body p-4">
                 <h3 class="fw-bold mb-4" th:text="${society.id == null ? 'Create New Society' : 'Edit Society'}"></h3>
 
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
                 <form th:action="${society.id == null ? '/societies/save' : '/societies/' + society.id + '/update'}" th:object="${society}" method="post">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Society Name</label>

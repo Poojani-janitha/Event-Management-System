@@ -24,10 +24,26 @@ public class SocietyService {
         return societyRepo.findAllBySocietyAdminId(adminId);
     }
 
+    public List<Society> getSocietiesByMemberId(Integer userId) {
+        return memberRepo.findByUserId(userId)
+                .stream()
+                .map(SocietyMember::getSociety)
+                .distinct()
+                .toList();
+    }
+
     public Society saveSociety(Society society) {
         if (society.getSocietyAdmin() == null) {
             throw new IllegalArgumentException("Society admin is required");
         }
+
+        if (societyRepo.existsByNameIgnoreCase(society.getName())) {
+            throw new IllegalArgumentException("A society with this name already exists.");
+        }
+
+        // if (societyRepo.existsByContactEmailIgnoreCase(society.getContactEmail())) {
+        //     throw new IllegalArgumentException("A society with this contact email already exists.");
+        // }
 
         society.setActive(true);
         Society savedSociety = societyRepo.save(society);
@@ -46,6 +62,14 @@ public class SocietyService {
     // Update existing society details
     public void updateSociety(Society society) {
         Society existing = getSocietyById(society.getId());
+
+        if (societyRepo.existsByNameIgnoreCaseAndIdNot(society.getName(), society.getId())) {
+            throw new IllegalArgumentException("A society with this name already exists.");
+        }
+
+        // if (societyRepo.existsByContactEmailIgnoreCaseAndIdNot(society.getContactEmail(), society.getId())) {
+        //     throw new IllegalArgumentException("A society with this contact email already exists.");
+        // }
 
         existing.setName(society.getName());
         existing.setDescription(society.getDescription());
@@ -126,6 +150,11 @@ public class SocietyService {
 
     public boolean isMemberOfSociety(Integer societyId, Integer userId) {
         return memberRepo.existsBySocietyIdAndUserId(societyId, userId);
+    }
+
+    public boolean isSocietyAdminForSociety(Integer societyId, Integer userId) {
+        Society society = getSocietyById(societyId);
+        return society.getSocietyAdmin() != null && society.getSocietyAdmin().getId().equals(userId);
     }
 
 

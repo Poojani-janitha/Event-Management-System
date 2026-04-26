@@ -139,18 +139,14 @@ public class VenueController {
             ra.addFlashAttribute("messageType", "success");
             ra.addFlashAttribute("status", "success");
             return "redirect:/venues";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("message", e.getMessage());
+            model.addAttribute("messageType", "danger");
+            model.addAttribute("status", "error");
+            model.addAttribute("venue", venue);
+            return "venues/addVenue";
         } catch (Exception e) {
-            // Handle duplicate venue name exception
-            String errorMessage = "A venue with this name already exists. Please choose a different name.";
-            if (e.getMessage() != null && e.getMessage().contains("Duplicate entry")) {
-                errorMessage = "A venue with this name already exists. Please choose a different name.";
-            } else if (e.getMessage() != null && e.getMessage().contains("unique")) {
-                errorMessage = "A venue with this name already exists. Please choose a different name.";
-            } else {
-                errorMessage = "Error saving venue: " + e.getMessage();
-            }
-            
-            model.addAttribute("message", errorMessage);
+            model.addAttribute("message", "Error saving venue: " + e.getMessage());
             model.addAttribute("messageType", "danger");
             model.addAttribute("status", "error");
             model.addAttribute("venue", venue);
@@ -209,18 +205,13 @@ public class VenueController {
             venueService.saveVenue(existingVenue);
             ra.addFlashAttribute("message", "Venue updated successfully!");
             return "redirect:/venues/" + id;
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("message", e.getMessage());
+            ra.addFlashAttribute("messageType", "danger");
+            ra.addFlashAttribute("status", "error");
+            return "redirect:/venues/" + id + "/edit";
         } catch (Exception e) {
-            // Handle duplicate venue name exception
-            String errorMessage = "A venue with this name already exists. Please choose a different name.";
-            if (e.getMessage() != null && e.getMessage().contains("Duplicate entry")) {
-                errorMessage = "A venue with this name already exists. Please choose a different name.";
-            } else if (e.getMessage() != null && e.getMessage().contains("unique")) {
-                errorMessage = "A venue with this name already exists. Please choose a different name.";
-            } else {
-                errorMessage = "Error updating venue: " + e.getMessage();
-            }
-            
-            ra.addFlashAttribute("message", errorMessage);
+            ra.addFlashAttribute("message", "Error updating venue: " + e.getMessage());
             ra.addFlashAttribute("messageType", "danger");
             ra.addFlashAttribute("status", "error");
             return "redirect:/venues/" + id + "/edit";

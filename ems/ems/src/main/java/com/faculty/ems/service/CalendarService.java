@@ -1,6 +1,8 @@
 package com.faculty.ems.service;
 
 import com.faculty.ems.dto.CalendarDto;
+import com.faculty.ems.dto.CalendarApiDto;
+import com.faculty.ems.dto.CalendarBookingItemDto;
 import com.faculty.ems.model.VenueBooking;
 import com.faculty.ems.model.VenueBooking.BookingStatus;
 import com.faculty.ems.repository.VenueBookingRepository;
@@ -9,8 +11,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -80,6 +84,45 @@ public class CalendarService {
         dto.setDaysInMonth(yearMonth.lengthOfMonth());
         dto.setStartDayOfWeek(startDate.getDayOfWeek().getValue()); // 1-7
 
+        return dto;
+    }
+
+    /**
+     * Builds a typed DTO intended for JSON serialization (API response).
+     * Uses lightweight booking items instead of returning JPA entities.
+     */
+    public CalendarApiDto getGlobalCalendarApiData(int year, int month) {
+        YearMonth yearMonth = YearMonth.of(year, month);
+
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        List<VenueBooking> bookings = venueBookingRepository
+                .findByBookingDateBetweenAndStatus(startDate, endDate, BookingStatus.APPROVED);
+
+        DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm");
+
+        Map<Integer, List<CalendarBookingItemDto>> bookingsByDay = bookings.stream()
+                .collect(Collectors.groupingBy(
+                        b -> b.getBookingDate().getDayOfMonth(),
+                        LinkedHashMap::new,
+                        Collectors.mapping(b -> new CalendarBookingItemDto(
+                                b.getEvent() != null ? b.getEvent().getTitle() : "",
+                                b.getVenue() != null ? b.getVenue().getName() : "",
+                                b.getStartTime() != null ? b.getStartTime().format(timeFmt) : "",
+                                b.getEndTime() != null ? b.getEndTime().format(timeFmt) : "",
+                                b.getSociety() != null ? b.getSociety().getName() : "",
+                                b.getStatus() != null ? b.getStatus().name() : "",
+                                b.getAdminNote()
+                        ), Collectors.toList())
+                ));
+
+        CalendarApiDto dto = new CalendarApiDto();
+        dto.setYear(year);
+        dto.setMonth(month);
+        dto.setDaysInMonth(yearMonth.lengthOfMonth());
+        dto.setStartDayOfWeek(startDate.getDayOfWeek().getValue()); // 1-7 (ISO)
+        dto.setBookingsByDay(bookingsByDay);
         return dto;
     }
 }

@@ -29,6 +29,22 @@ public class VenueService {
 
     public void saveVenue(Venue venue) {
         if (venue == null) throw new IllegalArgumentException("Venue cannot be null");
+        if (venue.getName() == null || venue.getName().isBlank()) {
+            throw new IllegalArgumentException("Venue name is required");
+        }
+
+        String name = venue.getName().trim();
+        if (venue.getId() == null) {
+            if (venueRepository.existsByNameIgnoreCase(name)) {
+                throw new IllegalArgumentException("A venue with this name already exists. Please choose a different name.");
+            }
+        } else {
+            if (venueRepository.existsByNameIgnoreCaseAndIdNot(name, venue.getId())) {
+                throw new IllegalArgumentException("A venue with this name already exists. Please choose a different name.");
+            }
+        }
+
+        venue.setName(name);
         venueRepository.save(venue);
     }
 

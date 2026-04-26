@@ -25,16 +25,25 @@ public class SocietyAdminRequestService {
     @Autowired
     private SocietyRepository societyRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     // Submit a new request
     public SocietyAdminRequest submitRequest(User user, SocietyAdminRequestDto dto) {
-        // Check if user already has a pending request
-        var existingRequest = requestRepository.findByUserIdAndStatus(user.getId(), SocietyAdminRequest.RequestStatus.PENDING);
-        if (existingRequest.isPresent()) {
-            throw new IllegalArgumentException("You already have a pending society admin request");
-        }
-
         Society society = societyRepository.findById(dto.getSelectedSocietyId())
                 .orElseThrow(() -> new EntityNotFoundException("Society not found"));
+
+                //check if user already has an approved request for the same society
+        boolean alreadyApprovedForSameSociety = requestRepository
+            .existsByUserIdAndCreatedSocietyIdAndStatus(
+                user.getId(),
+                society.getId(),
+                SocietyAdminRequest.RequestStatus.APPROVED
+            );
+
+        if (alreadyApprovedForSameSociety) {
+            throw new IllegalArgumentException("Your request for this society was already approved. You cannot request again for the same society.");
+        }
 
         SocietyAdminRequest request = SocietyAdminRequest.builder()
                 .user(user)
@@ -101,8 +110,10 @@ public class SocietyAdminRequestService {
         Society society = societyRepository.findById(request.getCreatedSocietyId())
                 .orElseThrow(() -> new EntityNotFoundException("Requested society not found"));
         society.setSocietyAdmin(user);
+        societyRepository.save(society);
 
         requestRepository.save(request);
+        emailService.sendSocietyRequestDecisionEmail(request);
     }
 
     public void rejectRequest(Integer id, String reason) {
@@ -117,5 +128,6 @@ public class SocietyAdminRequestService {
         request.setReviewNotes(reason == null || reason.isBlank() ? "Rejected by admin" : reason.trim());
 
         requestRepository.save(request);
+        emailService.sendSocietyRequestDecisionEmail(request);
     }
 }
