@@ -70,7 +70,7 @@ public class UserManagementController {
             userService.deleteUser(id);
             ra.addFlashAttribute("success", "User deleted successfully");
         } catch (Exception e) {
-            ra.addFlashAttribute("error", "User have some booking appoinments currently, cannot be deleted");
+            ra.addFlashAttribute("error", "This user is associated with a society, cannot be deleted");
         }
         return "redirect:/users";
     }
