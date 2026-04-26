@@ -99,16 +99,6 @@ public class SocietyController {
     @GetMapping("/{id}")
     public String viewSociety(@PathVariable Integer id, Model model, Authentication authentication) {
         Society society = societyService.getSocietyById(id);
-        boolean isAdmin = authentication.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
-        boolean isSocietyAdmin = authentication.getAuthorities().stream().anyMatch(a -> "ROLE_SOCIETY_ADMIN".equals(a.getAuthority()));
-        boolean isMember = authentication.getAuthorities().stream().anyMatch(a -> "ROLE_MEMBER".equals(a.getAuthority()));
-
-        if (isMember && !isAdmin && !isSocietyAdmin) {
-            User currentUser = userService.findUserByUsername(authentication.getName());
-            if (!societyService.isMemberOfSociety(id, currentUser.getId())) {
-                throw new AccessDeniedException("You can only view details of societies you are registered in.");
-            }
-        }
 
         // to get the member count
         List<SocietyMember> members = societyService.getSocietyMembers(id);
