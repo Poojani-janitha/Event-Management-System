@@ -51,6 +51,11 @@ public class EventService {
 
     
     public void deleteIfNoApprovedBooking(Long eventId) {
+        Event event = findById(eventId);
+        if (event.getStatus() == Event.EventStatus.PUBLISHED) {
+            throw new RuntimeException("Cannot delete a published event.");
+        }
+
         List<VenueBooking> approved = bookingRepo
             .findByEventIdOrderByBookingDateDesc(eventId)
             .stream()

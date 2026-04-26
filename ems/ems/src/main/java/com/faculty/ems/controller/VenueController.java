@@ -262,6 +262,7 @@ public class VenueController {
         long pending = allBookings.stream().filter(b -> b.getStatus() == VenueBooking.BookingStatus.PENDING).count();
         long rejected = allBookings.stream().filter(b -> b.getStatus() == VenueBooking.BookingStatus.REJECTED).count();
         long cancelled = allBookings.stream().filter(b -> b.getStatus() == VenueBooking.BookingStatus.CANCELLED).count();
+        long postponed = allBookings.stream().filter(b -> b.getStatus() == VenueBooking.BookingStatus.POSTPONED).count();
         
         // Apply Filtering via Strategy Pattern
         BookingFilterCriteria criteria = BookingFilterCriteria.builder()
@@ -283,6 +284,7 @@ public class VenueController {
         model.addAttribute("pendingCount", pending);
         model.addAttribute("rejectedCount", rejected);
         model.addAttribute("cancelledCount", cancelled);
+        model.addAttribute("postponedCount", postponed);
         
         return "venues/history";
     }
@@ -318,6 +320,21 @@ public class VenueController {
             ra.addFlashAttribute("messageType", "danger");
         }
         return "redirect:/venues/requests";
+    }
+
+    @PostMapping("/history/{id}/postpone")
+    public String postponeBooking(@PathVariable Long id,
+                                  @RequestParam(required = false) String adminNote,
+                                  RedirectAttributes ra) {
+        try {
+            venueBookingService.postponeApprovedBooking(id, adminNote);
+            ra.addFlashAttribute("message", "Booking moved to REJECTED and event marked as POSTPONED.");
+            ra.addFlashAttribute("messageType", "warning");
+        } catch (Exception e) {
+            ra.addFlashAttribute("message", "Error postponing booking: " + e.getMessage());
+            ra.addFlashAttribute("messageType", "danger");
+        }
+        return "redirect:/venues/history";
     }
 
 }

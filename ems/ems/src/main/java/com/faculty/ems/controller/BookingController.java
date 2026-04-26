@@ -43,7 +43,10 @@ public class BookingController {
                            @AuthenticationPrincipal UserDetails currentUser) {
         User user = userRepo.findByUsername(currentUser.getUsername()).orElseThrow();
         List<Long> allowedSocietyIds = getAllowedSocietyIds(user);
-        List<com.faculty.ems.model.Event> allowedEvents = eventService.findBySocietyIds(allowedSocietyIds);
+        List<com.faculty.ems.model.Event> allowedEvents = eventService.findBySocietyIds(allowedSocietyIds)
+                .stream()
+                .filter(e -> e.getStatus() == com.faculty.ems.model.Event.EventStatus.DRAFT)
+                .toList();
 
         if (eventId != null && allowedEvents.stream().noneMatch(e -> e.getId().equals(eventId))) {
             throw new AccessDeniedException("You cannot book venue for this event");
@@ -66,7 +69,10 @@ public class BookingController {
         User user = userRepo.findByUsername(currentUser.getUsername()).orElseThrow();
 
         List<Long> allowedSocietyIds = getAllowedSocietyIds(user);
-        List<com.faculty.ems.model.Event> allowedEvents = eventService.findBySocietyIds(allowedSocietyIds);
+        List<com.faculty.ems.model.Event> allowedEvents = eventService.findBySocietyIds(allowedSocietyIds)
+                .stream()
+                .filter(e -> e.getStatus() == com.faculty.ems.model.Event.EventStatus.DRAFT)
+                .toList();
 
         if (result.hasErrors()) {
             populateBookingFormModel(model, bookingForm, allowedEvents, eventLocked);
@@ -103,15 +109,23 @@ public class BookingController {
     public String myBookings(Model model,
                              @AuthenticationPrincipal UserDetails currentUser) {
         User user = userRepo.findByUsername(currentUser.getUsername()).orElseThrow();
-        Society society = societyRepo.findBySocietyAdminId(user.getId()).orElse(null);
-        if (society == null) {
+        List<Society> societies = societyRepo.findAllBySocietyAdminId(user.getId());
+        if (societies == null || societies.isEmpty()) {
             model.addAttribute("bookings", java.util.Collections.emptyList());
             model.addAttribute("error", "Your account is not linked to any society. Please contact admin.");
             return "bookings/list";
         }
 
-        model.addAttribute("bookings",
-            bookingService.getBookingsBySociety(society.getId().longValue()));
+        List<VenueBooking> allBookings = societies.stream()
+                .flatMap(s -> bookingService.getBookingsBySociety(s.getId().longValue()).stream())
+                .sorted((a, b) -> {
+                    int byDate = b.getBookingDate().compareTo(a.getBookingDate());
+                    if (byDate != 0) return byDate;
+                    return b.getStartTime().compareTo(a.getStartTime());
+                })
+                .toList();
+
+        model.addAttribute("bookings", allBookings);
         return "bookings/list";
     }
 

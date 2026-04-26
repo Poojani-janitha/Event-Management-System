@@ -16,7 +16,7 @@
     </div>
 
     <form th:action="@{/bookings/new}" method="post" th:object="${booking}">
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
       <input type="hidden" name="eventLocked" th:value="${eventLocked}"/>
 
      
@@ -62,9 +62,9 @@
                                data-name=${v.name},
                                data-location=${v.location},
                                data-capacity=${v.capacity},
-                               data-projector=${v.hasProjector},
-                               data-ac=${v.hasAc},
-                               data-sound=${v.hasSound},
+                               data-projector=${v.has_projector},
+                               data-ac=${v.has_ac},
+                               data-sound=${v.has_sound},
                                data-description=${v.description}">
                 View Details
               </button>

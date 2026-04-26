@@ -18,7 +18,11 @@ public class EmailService {
         }
 
         String to = booking.getRequestedBy().getEmail();
-        String subject = "Booking " + booking.getStatus() + ": " + booking.getEvent().getTitle();
+        String subject = booking.getStatus() == VenueBooking.BookingStatus.REJECTED
+                && booking.getEvent() != null
+                && booking.getEvent().getStatus() == com.faculty.ems.model.Event.EventStatus.POSTPONED
+                ? "POSTPONED"
+                : "Booking " + booking.getStatus() + ": " + booking.getEvent().getTitle();
         
         StringBuilder message = new StringBuilder();
         message.append("Dear ").append(booking.getRequestedBy().getFullName()).append(",\n\n");

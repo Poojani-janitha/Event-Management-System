@@ -55,6 +55,6 @@ public class VenueBooking {
     private LocalDateTime reviewedAt;
 
     public enum BookingStatus {
-        PENDING, APPROVED, REJECTED, CANCELLED
+        PENDING, APPROVED, REJECTED, CANCELLED, POSTPONED
     }
 }

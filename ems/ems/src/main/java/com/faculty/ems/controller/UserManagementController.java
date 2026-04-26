@@ -2,7 +2,6 @@ package com.faculty.ems.controller;
 
 import com.faculty.ems.dto.SocietyAdminRequestDto;
 import com.faculty.ems.dto.UserEditDto;
-import com.faculty.ems.model.Role;
 import com.faculty.ems.model.User;
 import com.faculty.ems.service.SocietyAdminRequestService;
 import com.faculty.ems.service.UserService;
@@ -39,7 +38,6 @@ public class UserManagementController {
                 user.getId(), user.getUsername(), user.getEmail(),
                 user.getFullName(), null, user.getRole(), user.isEnabled());
         model.addAttribute("user", dto);
-        model.addAttribute("roles", Role.values());
         return "user/edit";
     }
 
@@ -49,20 +47,31 @@ public class UserManagementController {
             BindingResult result,
             Model model,
             RedirectAttributes ra) {
+        if (dto.getRole() == null) {
+            dto.setRole(userService.findUserById(id).getRole());
+        }
         if (result.hasErrors()) {
-            model.addAttribute("roles", Role.values());
             return "user/edit";
         }
         dto.setId(id);
-        userService.updateUser(dto);
-        ra.addFlashAttribute("success", "User updated successfully");
-        return "redirect:/users";
+        try {
+            userService.updateUser(dto);
+            ra.addFlashAttribute("success", "User updated successfully");
+            return "redirect:/users";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            return "user/edit";
+        }
     }
 
     @PostMapping("/{id}/delete")
     public String deleteUser(@PathVariable Integer id, RedirectAttributes ra) {
-        userService.deleteUser(id);
-        ra.addFlashAttribute("success", "User deleted successfully");
+        try {
+            userService.deleteUser(id);
+            ra.addFlashAttribute("success", "User deleted successfully");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "User have some booking appoinments currently, cannot be deleted");
+        }
         return "redirect:/users";
     }
 

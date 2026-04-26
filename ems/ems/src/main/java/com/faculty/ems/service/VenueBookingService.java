@@ -1,10 +1,13 @@
 package com.faculty.ems.service;
 
 import com.faculty.ems.exception.BookingConflictException;
+import com.faculty.ems.model.Event;
 import com.faculty.ems.model.VenueBooking;
+import com.faculty.ems.repository.EventRepository;
 import com.faculty.ems.repository.VenueBookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -12,6 +15,7 @@ import java.util.List;
 public class VenueBookingService {
 
     private final VenueBookingRepository bookingRepo;
+    private final EventRepository eventRepo;
     private final EmailService emailService;
 
     
@@ -62,7 +66,7 @@ public class VenueBookingService {
             throw new RuntimeException("Only pending bookings can be approved.");
         }
 
-        // Conflict check: Ensure no other APPROVED or PENDING booking overlaps
+        // Conflict check: Ensure no other APPROVED booking overlaps
         List<VenueBooking> conflicts = bookingRepo.findConflictingExcluding(
                 booking.getVenue().getId(),
                 booking.getBookingDate(),
@@ -83,6 +87,14 @@ public class VenueBookingService {
 
         booking.setStatus(VenueBooking.BookingStatus.APPROVED);
         booking.setAdminNote(note);
+
+        // Keep event lifecycle aligned with approved venue booking.
+        Event event = booking.getEvent();
+        if (event.getStatus() != Event.EventStatus.PUBLISHED) {
+            event.setStatus(Event.EventStatus.PUBLISHED);
+            eventRepo.save(event);
+        }
+
         VenueBooking saved = bookingRepo.save(booking);
         emailService.sendBookingStatusEmail(saved);
     }
@@ -94,6 +106,24 @@ public class VenueBookingService {
         }
         booking.setStatus(VenueBooking.BookingStatus.REJECTED);
         booking.setAdminNote(reason);
+        VenueBooking saved = bookingRepo.save(booking);
+        emailService.sendBookingStatusEmail(saved);
+    }
+
+    public void postponeApprovedBooking(long id, String note) {
+        VenueBooking booking = findById(id);
+        if (booking.getStatus() != VenueBooking.BookingStatus.APPROVED) {
+            throw new RuntimeException("Only approved bookings can be postponed.");
+        }
+
+        // Postponement is represented as a rejected booking with a postponed event.
+        booking.setStatus(VenueBooking.BookingStatus.REJECTED);
+        booking.setAdminNote(note);
+
+        Event event = booking.getEvent();
+        event.setStatus(Event.EventStatus.POSTPONED);
+        eventRepo.save(event);
+
         VenueBooking saved = bookingRepo.save(booking);
         emailService.sendBookingStatusEmail(saved);
     }

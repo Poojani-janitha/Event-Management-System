@@ -3,6 +3,7 @@ package com.faculty.ems.service;
 import com.faculty.ems.dto.UserEditDto;
 import com.faculty.ems.dto.UserRegistrationDto;
 import com.faculty.ems.model.User;
+import com.faculty.ems.repository.SocietyMemberRepository;
 import com.faculty.ems.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -18,6 +19,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SocietyMemberRepository societyMemberRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -56,10 +60,18 @@ public class UserService {
 
     public void updateUser(UserEditDto dto) {
         User user = findUserById(dto.getId());
+
+        if (!user.getUsername().equals(dto.getUsername()) && userRepository.existsByUsername(dto.getUsername())) {
+            throw new IllegalArgumentException("Username is already taken");
+        }
+
+        if (!user.getEmail().equals(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
+            throw new IllegalArgumentException("Email is already registered");
+        }
+
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setFullName(dto.getFullName());
-        user.setRole(dto.getRole());
         user.setEnabled(dto.isEnabled());
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -71,6 +83,10 @@ public class UserService {
         if (!userRepository.existsById(id)) {
             throw new EntityNotFoundException("User not found with id: " + id);
         }
+
+        societyMemberRepository.findByUserId(id)
+                .forEach(societyMemberRepository::delete);
+
         userRepository.deleteById(id);
     }
 }

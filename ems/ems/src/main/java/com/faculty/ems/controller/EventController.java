@@ -23,6 +23,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.faculty.ems.repository.VenueBookingRepository;
 
 @Controller
 @RequestMapping("/events")
@@ -32,6 +33,7 @@ public class EventController {
     private final EventService eventService;
     private final SocietyRepository societyRepo;
     private final UserRepository userRepo;
+    private final VenueBookingRepository bookingRepo;
 
     @GetMapping
     public String list(Model model,
@@ -63,7 +65,14 @@ public class EventController {
             events = eventService.findBySocietyIds(allowedSocietyIds);
         }
 
+        // Map events to include booking status
+        Map<Long, Boolean> eventHasBooking = new LinkedHashMap<>();
+        for (Event event : events) {
+            eventHasBooking.put(event.getId(), bookingRepo.existsByEventId(event.getId()));
+        }
+
         model.addAttribute("events", events);
+        model.addAttribute("eventHasBooking", eventHasBooking);
         model.addAttribute("societyOptions", new ArrayList<>(allowedSocieties.values()));
         model.addAttribute("selectedSocietyId", societyId);
         return "events/list";
@@ -151,6 +160,7 @@ public class EventController {
         Event event = eventService.findById(id);
         assertEventAccess(event, currentUser);
         model.addAttribute("event", event);
+        model.addAttribute("hasBooking", bookingRepo.existsByEventId(id));
         return "events/detail";
     }
 

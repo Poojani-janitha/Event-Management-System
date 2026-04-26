@@ -14,10 +14,12 @@ public class DashboardService {
     private VenueBookingRepository venueBookingRepository;
 
     public List<VenueBooking> getPendingBookings() {
+        //admin can see all pending bookings
         return venueBookingRepository.findByStatus(VenueBooking.BookingStatus.PENDING);
     }
 
     public List<VenueBooking> getApprovedBookings() {
+        //society admin can see all approved bookings
         return venueBookingRepository.findByStatus(VenueBooking.BookingStatus.APPROVED);
     }
 

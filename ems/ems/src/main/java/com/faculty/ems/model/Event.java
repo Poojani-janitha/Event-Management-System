@@ -50,6 +50,6 @@ public class Event {
     }
 
     public enum EventStatus {
-        DRAFT, PUBLISHED
+        DRAFT, PUBLISHED, POSTPONED
     }
 }

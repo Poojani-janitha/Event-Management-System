@@ -17,7 +17,7 @@ public interface VenueBookingRepository extends JpaRepository<VenueBooking, Long
         SELECT b FROM VenueBooking b
         WHERE b.venue.id   = :venueId
           AND b.bookingDate = :bookingDate
-          AND b.status NOT IN ('REJECTED', 'CANCELLED')
+          AND b.status = 'APPROVED'
           AND b.startTime  < :endTime
           AND b.endTime    > :startTime
     """)
@@ -33,13 +33,14 @@ public interface VenueBookingRepository extends JpaRepository<VenueBooking, Long
 
         List<VenueBooking> findByEventIdOrderByBookingDateDesc(Long eventId);
 
+    boolean existsByEventId(Long eventId);
 
     @Query("""
         SELECT b FROM VenueBooking b
         WHERE b.venue.id   = :venueId
           AND b.bookingDate = :bookingDate
           AND b.id         != :excludeId
-          AND b.status NOT IN ('REJECTED', 'CANCELLED')
+          AND b.status = 'APPROVED'
           AND b.startTime  < :endTime
           AND b.endTime    > :startTime
     """)
